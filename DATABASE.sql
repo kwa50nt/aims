@@ -9,12 +9,12 @@ CREATE TABLE userrole (
 
 CREATE TABLE webaccount (
   account_id BIGSERIAL NOT NULL PRIMARY KEY,
-  email varchar(100) NOT NULL UNIQUE,
-  password varchar(255) NOT NULL,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
   role_id INT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  verification_token varchar(255),
+  verification_token VARCHAR(255),
   is_updated BOOLEAN DEFAULT FALSE,
   CONSTRAINT webaccount_ibfk_1 FOREIGN KEY (role_id) 
     REFERENCES userrole (role_id),
@@ -27,16 +27,16 @@ CREATE INDEX role_id_idx ON webaccount(role_id);
 
 CREATE TABLE upsealumni (
   alumni_id BIGSERIAL NOT NULL PRIMARY KEY,
-  last_name varchar(50) NOT NULL,
-  first_name varchar(50) NOT NULL,
-  middle_name varchar(50),
-  suffix varchar(10),
+  last_name VARCHAR(50) NOT NULL,
+  first_name VARCHAR(50) NOT NULL,
+  middle_name VARCHAR(50),
+  suffix VARCHAR(10),
   gender genders,
-  student_number varchar(20) NOT NULL UNIQUE,
+  student_number VARCHAR(20) NOT NULL UNIQUE,
   entry_date date,
-  current_email varchar(100) NOT NULL,
-  phone_number varchar(20) NOT NULL, 
-  current_address varchar(200),
+  current_email VARCHAR(100) NOT NULL,
+  phone_number VARCHAR(20) NOT NULL, 
+  current_address VARCHAR(200),
   account_id INT,
   CONSTRAINT upsealumni_ibfk_1 FOREIGN KEY (account_id) 
     REFERENCES webaccount (account_id),
@@ -68,8 +68,8 @@ CREATE INDEX alumni_id_idx ON graduationinfo(alumni_id);
 CREATE TABLE employmenthistory (
   employment_id BIGSERIAL NOT NULL PRIMARY KEY,
   alumni_id INT NOT NULL,
-  employer varchar(100) NOT NULL,
-  last_position_held varchar(100) NOT NULL,
+  employer VARCHAR(100) NOT NULL,
+  last_position_held VARCHAR(100) NOT NULL,
   start_date date NOT NULL,
   end_date date NOT NULL,
   is_current BOOLEAN DEFAULT FALSE,
@@ -81,7 +81,7 @@ CREATE INDEX alumni_id_idx ON employmenthistory(alumni_id);
 CREATE TABLE alumnidegrees (
   degree_id BIGSERIAL NOT NULL PRIMARY KEY,
   alumni_id INT NOT NULL,
-  degree_name varchar(100) NOT NULL,
+  degree_name VARCHAR(100) NOT NULL,
   CONSTRAINT alumnidegrees_ibfk_1 FOREIGN KEY (alumni_id) 
     REFERENCES upsealumni (alumni_id)
 );
@@ -90,7 +90,7 @@ CREATE INDEX alumni_id_idx ON alumnidegrees(alumni_id);
 CREATE TABLE activeorganizations (
   org_id BIGSERIAL NOT NULL PRIMARY KEY,
   alumni_id INT NOT NULL,
-  organization_name varchar(100) NOT NULL,
+  organization_name VARCHAR(100) NOT NULL,
   CONSTRAINT activeorganizations_ibfk_1 FOREIGN KEY (alumni_id) 
     REFERENCES upsealumni (alumni_id)
 );
