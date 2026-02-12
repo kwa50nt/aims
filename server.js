@@ -7,11 +7,11 @@ app.use(express.json());
 app.use(cors());
 
 const pool = new Pool({
-  user: "postgres",
-  host: "localhost",
-  database: "alumni_db",
-  password: "password", // database password
-  port: 5432,
+  user: process.env.PGUSER || "postgres",
+  host: process.env.PGHOST || "localhost",
+  database: process.env.PGDATABASE || "alumni_db",
+  password: process.env.PGPASSWORD || "password",
+  port: process.env.PGPORT ? parseInt(process.env.PGPORT) : 5432,
 });
 
 app.post("/add-alumni", async (req, res) => {
