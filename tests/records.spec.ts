@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 
-test('Initial HTML/CSS Tests', async ({ page }) => {
+test('Initial HTML/CSS Tests', async ({ page }, testInfo) => {
+  if (!testInfo.project.name.startsWith('frontend')) {
+    test.skip();
+  }
   await page.goto('/index.html');
   await page.waitForLoadState('domcontentloaded');
 
