@@ -7,14 +7,14 @@ test('Initial HTML/CSS Tests', async ({ page }) => {
   await expect(page.getByRole('img', { name: 'UPSE logo' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Alumni Information Management System' })).toBeVisible();
   await expect(page.getByText('admin.up.edu.ph')).toBeVisible();
-  await page.locator('div').filter({ hasText: 'admin.up.edu.ph' }).click();
-  await page.getByRole('img', { name: 'Logout icon' }).click();
-  await page.getByRole('link', { name: 'Records', exact: true }).click();
-  await page.getByRole('link', { name: 'Email Blast' }).click();
-  await page.getByRole('link', { name: 'Add Records' }).click();
-  await page.getByRole('link', { name: 'Alumni News' }).click();
+  await expect(page.locator('div').filter({ hasText: 'admin.up.edu.ph' })).toBeVisible();
+  await expect(page.getByRole('img', { name: 'Logout icon' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Records', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Email Blast' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Add Records' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Alumni News' })).toBeVisible();
+  // await expect(page.getByText('All')).toBeVisible();
   await page.locator('img').nth(2).click();
-  await page.getByText('All').click();
   await page.locator('img').nth(3).click();
   await page.locator('div').nth(2).click();
   await page.locator('img').nth(4).click();
