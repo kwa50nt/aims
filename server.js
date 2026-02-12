@@ -8,7 +8,7 @@ app.use(cors());
 
 const pool = new Pool({
   user: "postgres",
-  host: "host.docker.internal",
+  host: "localhost",
   database: "alumni_db",
   password: "", // database password
   port: 5432,
@@ -80,7 +80,8 @@ app.post("/add-alumni", async (req, res) => {
 
   } catch (err) {
     await client.query("ROLLBACK");
-    res.status(500).send(err.message);
+    res.status(500).json({ error: err.message });
+
   } finally {
     client.release();
   }
@@ -103,11 +104,11 @@ app.delete("/delete-alumni/:id", async (req, res) => {
 
     await client.query("COMMIT");
 
-    res.send("Alumni deleted successfully");
+    res.json("Alumni deleted successfully");
 
   } catch (err) {
     await client.query("ROLLBACK");
-    res.status(500).send(err.message);
+    res.status(500).json({ error: err.message });
   } finally {
     client.release();
   }
