@@ -35,20 +35,23 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
-      name: 'chromium',
+      name: 'frontend-chromium',
       use: { ...devices['Desktop Chrome'] },
     },
 
     {
-      name: 'firefox',
+      name: 'frontend-firefox',
       use: { ...devices['Desktop Firefox'] },
     },
 
     {
-      name: 'webkit',
+      name: 'frontend-webkit',
       use: { ...devices['Desktop Safari'] },
     },
-
+    {
+      name: 'backend',
+      use: {},                           
+    },
     /* Test against mobile viewports. */
     // {
     //   name: 'Mobile Chrome',

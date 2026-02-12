@@ -14,7 +14,7 @@ jobs:
         image: postgres:18
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: password
           POSTGRES_DB: alumni_db
         ports:
           - 5432:5432
@@ -35,9 +35,9 @@ jobs:
       run: npx playwright install --with-deps
     - name: Set up Database
       run: |
-        psql -h localhost -U postgres -d alumni_db -f database.sql
+        psql -h localhost -U postgres -d alumni_db -f DATABASE.sql
       env:
-        PGPASSWORD: postgres
+        PGPASSWORD: password
     - name: Start Server
       run: |
         npm start &
