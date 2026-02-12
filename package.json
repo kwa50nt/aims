@@ -1,0 +1,31 @@
+{
+  "name": "aims",
+  "version": "1.0.0",
+  "description": "This is a course requirement for CS 191/CS192 Software Engineering Courses of the Department of Computer Science, College of Engineering, University of the Philippines, Diliman under the guidance of Prof. Ma. Rowena C. Solamo for the AY 2025-2026.",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "serve": "serve . -p 8080",
+    "dev": "serve . -p 8080"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kwa50nt/aims.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kwa50nt/aims/issues"
+  },
+  "homepage": "https://github.com/kwa50nt/aims#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "serve": "^14.2.1",
+    "@types/node": "^25.2.3"
+  }
+}

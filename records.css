@@ -118,11 +118,16 @@ nav a {
 nav a:first-child {
     border-radius: 2rem 0 0 2rem;
     background-color: #02451c;
-    color: white;
+    color: #fff;
 }
 
 nav a:last-child {
     border-radius: 0 2rem 2rem 0;
+}
+
+nav a.active-nav {
+    background-color: #02451C;
+    color: #fff;
 }
 
 main {
