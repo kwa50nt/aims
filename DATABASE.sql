@@ -39,7 +39,7 @@ CREATE TABLE upsealumni (
   current_address VARCHAR(200),
   account_id INT,
   CONSTRAINT upsealumni_ibfk_1 FOREIGN KEY (account_id) 
-    REFERENCES webaccount (account_id),
+    REFERENCES webaccount (account_id) ON DELETE CASCADE,
   CONSTRAINT student_number_format 
     CHECK (student_number ~ '^[0-9]{4}-[0-9]{5}$'),
   CONSTRAINT email_format CHECK (
@@ -61,7 +61,7 @@ CREATE TABLE graduationinfo (
   latin_honor latin_honors,
 
   CONSTRAINT graduationinfo_ibfk_1 FOREIGN KEY (alumni_id) 
-    REFERENCES upsealumni (alumni_id)
+    REFERENCES upsealumni (alumni_id) ON DELETE CASCADE
 );
 CREATE INDEX alumni_id_idx ON graduationinfo(alumni_id);
 
@@ -74,24 +74,21 @@ CREATE TABLE employmenthistory (
   end_date date NOT NULL,
   is_current BOOLEAN DEFAULT FALSE,
   CONSTRAINT employmenthistory_ibfk_1 FOREIGN KEY (alumni_id) 
-    REFERENCES upsealumni (alumni_id)
+    REFERENCES upsealumni (alumni_id) ON DELETE CASCADE
 );
-CREATE INDEX alumni_id_idx ON employmenthistory(alumni_id);
 
 CREATE TABLE alumnidegrees (
   degree_id BIGSERIAL NOT NULL PRIMARY KEY,
   alumni_id INT NOT NULL,
   degree_name VARCHAR(100) NOT NULL,
   CONSTRAINT alumnidegrees_ibfk_1 FOREIGN KEY (alumni_id) 
-    REFERENCES upsealumni (alumni_id)
+    REFERENCES upsealumni (alumni_id) ON DELETE CASCADE
 );
-CREATE INDEX alumni_id_idx ON alumnidegrees(alumni_id);
 
 CREATE TABLE activeorganizations (
   org_id BIGSERIAL NOT NULL PRIMARY KEY,
   alumni_id INT NOT NULL,
   organization_name VARCHAR(100) NOT NULL,
   CONSTRAINT activeorganizations_ibfk_1 FOREIGN KEY (alumni_id) 
-    REFERENCES upsealumni (alumni_id)
+    REFERENCES upsealumni (alumni_id) ON DELETE CASCADE
 );
-CREATE INDEX alumni_id_idx ON activeorganizations(alumni_id);
