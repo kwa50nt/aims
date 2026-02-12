@@ -40,7 +40,7 @@ jobs:
         PGPASSWORD: password
     - name: Start Server
       run: |
-        npm start &
+        node server.js
         sleep 10   # wait a few seconds for the server to start
     - name: Run Playwright tests
       run: npx playwright test
