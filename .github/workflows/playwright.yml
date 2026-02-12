@@ -8,6 +8,22 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: alumni_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
+
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -17,6 +33,15 @@ jobs:
       run: npm ci
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
+    - name: Set up Database
+      run: |
+        psql -h localhost -U postgres -d alumni_db -f database.sql
+      env:
+        PGPASSWORD: postgres
+    - name: Start Server
+      run: |
+        npm start &
+        sleep 10   # wait a few seconds for the server to start
     - name: Run Playwright tests
       run: npx playwright test
     - uses: actions/upload-artifact@v4
