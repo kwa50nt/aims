@@ -1,0 +1,190 @@
+/* CSS Reset
+http://meyerweb.com/eric/tools/css/reset/ 
+v2.0 | 20110126
+License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+/* Border Box */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    background-color: #f5f5f5;
+}
+
+h1 {
+    font-family: 'Times New Roman', Times, serif
+}
+
+p,
+nav a {
+    font-family: 'Inter', Arial, Calibri, sans-serif
+}
+
+header {
+    display: flex;
+    width: 100vw;
+    height: 7.5vh;
+    background-color: #751518;
+    align-items: center;
+    gap: 1vw;
+}
+
+#upse-logo {
+    height: 100%;
+    border-radius: 0 2rem 2rem 0;
+}
+
+header h1 {
+    font-size: 1.5vw;
+    color: #fff;
+}
+
+header .logout {
+    display: flex;
+    gap: 2vh;
+    align-items: center;
+    margin-left: auto;
+    border-radius: 2rem;
+    padding: 1vh 1vw;
+    background-color: #fff;
+}
+
+.logout p {
+    color: #02451C;
+}
+
+nav {
+    display: flex;
+    margin: 2vh;
+}
+
+nav a {
+    display: inline-block;
+    padding: 2vh 2vw;
+    background-color: #fff;
+    text-decoration: none;
+    color: #02451C;
+}
+
+nav a:first-child {
+    border-radius: 2rem 0 0 2rem;
+    background-color: #02451c;
+    color: white;
+}
+
+nav a:last-child {
+    border-radius: 0 2rem 2rem 0;
+}
+
+main {
+    border-radius: 1rem;
+    margin: 0 1vw;
+}
+
+main > div {
+    display: grid;
+    grid-template-columns: 1fr 8fr 1fr 3fr 3fr 7fr 15fr 15fr 2fr;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+    gap: 1vw;
+    padding: 0.5vh 0.5vw;
+    font-size: 0.65rem;
+    border-radius: 0.5rem 0.5rem 0 0;
+    background-color: #fafafa;
+}
+
+main > div img {
+    width: 0.8vw;
+}
+
+main > div:first-child {
+    background-color: #751518;
+    color: #fff;
+}
+
+.name-cell,
+.orgs-cell,
+.work-cell,
+.grad-cell,
+.filter-controls,
+.filter-dropdown,
+.search-bar,
+.selected-count {
+    display: flex;
+    gap: 0.25vw;
+    align-items: center;
+}
+
+.filter-controls {
+    margin: 3vh 3vw;
+    gap: 0.5vw;
+}
+
+.filter-dropdown,
+.search-bar,
+.selected-count {
+    background-color: #fff;
+    padding: 0.5vw;
+    border-radius: 1rem;
+}
+.search-bar input {
+    border: none;
+}
+
+.mini-info {
+    display: flex;
+    gap: 0.25vw;
+    align-items: center;
+    border: 1px solid #71717a;
+    border-radius: 2rem 2rem 2rem 2rem;
+    padding: 0.25vw;
+}
