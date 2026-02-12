@@ -10,7 +10,7 @@ const pool = new Pool({
   user: "postgres",
   host: "localhost",
   database: "alumni_db",
-  password: "", // database password
+  password: "password", // database password
   port: 5432,
 });
 
@@ -94,13 +94,10 @@ app.delete("/delete-alumni/:id", async (req, res) => {
 
   try {
     await client.query("BEGIN");
-
-    await client.query("DELETE FROM graduationinfo WHERE alumni_id = $1", [id]);
-    await client.query("DELETE FROM employmenthistory WHERE alumni_id = $1", [id]);
-    await client.query("DELETE FROM alumnidegrees WHERE alumni_id = $1", [id]);
-    await client.query("DELETE FROM activeorganizations WHERE alumni_id = $1", [id]);
-
+    
+    webID = await client.query("SELECT account_id FROM upsealumni WHERE alumni_id = $1", [id]);
     await client.query("DELETE FROM upsealumni WHERE alumni_id = $1", [id]);
+    await client.query("DELETE FROM webaccount WHERE account_id = $1", [webID.rows[0].account_id]);
 
     await client.query("COMMIT");
 
