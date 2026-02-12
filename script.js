@@ -69,3 +69,36 @@ function removeRow(button) {
   const row = button.parentElement;
   row.remove();
 }
+
+async function addAlumni() {
+  // placeholder data
+  const data = {
+    email: "cpcheng@up.edu.ph",
+    password: "hehe",
+    role_name: 'Alumni',
+    last_name: "cheng",
+    first_name: "cellin",
+    gender: "F",
+    student_number: "2023-04362",
+    current_email: "cpcheng@up.edu.ph",
+    phone_number: "9690877666"
+  };
+
+  try {
+    // fetching the server
+    const response = await fetch("http://localhost:3000/add-alumni", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    });
+
+    // result of fetching
+    const fetched = await response.json();
+    console.log("Server Response:", fetched);
+  }
+  catch (err){
+    console.log("error adding alumni:", err);
+  }
+}
