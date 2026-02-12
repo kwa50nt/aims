@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Alumni Management System</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="records.css">
+  <link rel="stylesheet" href="add-records.css">
+</head>
+
+<body>
+  <!-- HEADER -->
+  <header>
+        <img id="upse-logo" src="assets/upse-logo.png" alt="UPSE logo">
+        <h1>Alumni Information Management System</h1>
+        <div class="logout">
+            <p>admin.up.edu.ph</p>
+            <img src="assets/logout.png" alt="Logout icon">
+        </div>
+    </header>
+
+  <div class="nav-container">
+    <nav>
+        <a href="index.html">Records</a>
+        <a href="#">Email Blast</a>
+        <a href="add-records.html" class="active-nav">Add Records</a>
+        <a href="#">Alumni News</a>
+    </nav>
+
+    <button class="add-btn">
+        <i class="fas fa-plus"></i> Add Alumni
+    </button>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-item">
+        <i class="fas fa-file-excel"></i> Excel Import
+      </div>
+      <div class="sidebar-item active">
+        <i class="fas fa-user-plus"></i> Add Alumni
+      </div>
+      <div class="sidebar-item">
+        <i class="fas fa-user-check"></i> Confirm Alumni Registration
+      </div>
+    </aside>
+
+    <!-- FORM SECTION -->
+    <section class="form-section">
+      <form class="alumni-form">
+        <div class="form-grid">
+          <div>
+            <label>Full Name</label>
+            <input type="text" placeholder="Your Full Name">
+          </div>
+
+          <div>
+            <label>Email</label>
+            <input type="email" placeholder="Your Email">
+          </div>
+
+          <div>
+            <label>Sex</label>
+            <input type="text" placeholder="Gender">
+          </div>
+
+          <div>
+            <label>Number</label>
+            <input type="text" placeholder="Your Number">
+          </div>
+
+          <div>
+            <label>Student - Number</label>
+            <input type="text" placeholder="xxxx-xxxxx">
+          </div>
+
+          <div>
+            <label>Address</label>
+            <input type="text" placeholder="Your Home Address">
+          </div>
+
+          <div>
+            <label>Active Organizations</label>
+            <input type="text" placeholder="Org1, org2, org3">
+          </div>
+
+          <div>
+            <label>Entry Date</label>
+            <input type="text" placeholder="DD/MM/YYYY">
+          </div>
+        </div>
+
+        <!-- Employment History -->
+        <div class="section-title">
+        Employment History
+        <button type="button" class="circle-btn" onclick="addEmployment()">
+            <i class="fas fa-plus"></i>
+        </button>
+        </div>
+
+        <div id="employment-container">
+        <div class="employment-row">
+            <div>
+            <label>Employer</label>
+            <input type="text" placeholder="Employer">
+            </div>
+
+            <div>
+            <label>Position</label>
+            <input type="text" placeholder="Position">
+            </div>
+
+            <div>
+            <label>Start</label>
+            <input type="text" placeholder="MM/YYYY">
+            </div>
+
+            <div>
+            <label>End</label>
+            <input type="text" placeholder="MM/YYYY">
+            </div>
+
+            <button type="button" class="circle-btn minus" onclick="removeRow(this)">
+            <i class="fas fa-minus"></i>
+            </button>
+        </div>
+        </div>
+
+        <!-- Graduate Info -->
+        <div class="section-title">
+        Graduate Info
+        <button type="button" class="circle-btn" onclick="addGraduate()">
+            <i class="fas fa-plus"></i>
+        </button>
+        </div>
+
+        <div id="graduate-container">
+        <div class="graduate-row">
+            <div>
+            <label>Degree</label>
+            <input type="text" placeholder="Degree">
+            </div>
+
+            <div>
+            <label>Latin Honor</label>
+            <input type="text" placeholder="Latin Honor">
+            </div>
+
+            <div>
+            <label>Graduation Year</label>
+            <input type="text" placeholder="MM/YYYY">
+            </div>
+
+            <button type="button" class="circle-btn minus" onclick="removeRow(this)">
+            <i class="fas fa-minus"></i>
+            </button>
+        </div>
+        </div>
+
+
+      </form>
+    </section>
+  </div>
+<script src="script.js"></script>
+</body>
+</html>
+
