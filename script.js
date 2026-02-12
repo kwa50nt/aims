@@ -102,3 +102,25 @@ async function addAlumni() {
     console.log("error adding alumni:", err);
   }
 }
+
+async function deleteAlumni(){
+alumniId = "0"; // will work kahit wala sa databse 
+  try {
+    // fetching the server
+    const response = await fetch(`http://localhost:3000/delete-alumni/${alumniId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+
+    // result of fetching
+    const fetched = await response.json();
+    console.log("Server Response:", fetched);
+  }
+  catch (err){
+    console.log("error deleting alumni:", err);
+  }
+
+}
