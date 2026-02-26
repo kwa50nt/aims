@@ -91,13 +91,93 @@ async function addAlumni() {
   const form = document.querySelector(".alumni-form");
 
   const userEmail = form.querySelector('input[placeholder="Your Email"]').value;
-  // generate a unique account email for testing
+
+  // Generate unique account email (for testing duplicate constraint)
   const randomSuffix = Math.floor(Math.random() * 100000);
   const accountEmail = `test+${randomSuffix}@example.com`;
 
+  const graduationInfo = Array.from(
+    document.querySelectorAll("#graduate-container .graduate-row")
+  )
+    .map(row => {
+      const degree = row.querySelector('input[placeholder="Degree"]').value.trim();
+      const latinHonor = row.querySelector('input[placeholder="Latin Honor"]').value.trim();
+      const gradYearInput = row.querySelector('input[placeholder="MM/YYYY"]').value;
+
+      const year_graduated = gradYearInput && gradYearInput.includes("/")
+        ? parseInt(gradYearInput.split("/")[1])
+        : null;
+
+      const selects = row.querySelectorAll("select");
+
+      const semester_started =
+        selects[0]?.value === "1st" ? 1 :
+        selects[0]?.value === "2nd" ? 2 :
+        null;
+
+      const semester_graduated =
+        selects[1]?.value === "1st" ? 1 :
+        selects[1]?.value === "2nd" ? 2 :
+        null;
+
+      return {
+        degree_name: degree,
+        latin_honor: latinHonor || null,
+        year_graduated,
+        semester_started,
+        semester_graduated
+      };
+    })
+    .filter(Boolean);
+
+  const employmentHist = Array.from(
+    document.querySelectorAll("#employment-container .employment-row")
+  )
+    .map(row => {
+      const employer = row.querySelector('input[placeholder="Employer"]').value.trim();
+      const position = row.querySelector('input[placeholder="Position"]').value.trim();
+
+      const dateInputs = row.querySelectorAll('input[placeholder="MM/YYYY"]');
+
+      const startRaw = dateInputs[0]?.value || "";
+      const endRaw = dateInputs[1]?.value || "";
+
+      const convertToSQLDate = (val) => {
+        if (!val || !val.includes("/")) return null;
+        const [month, year] = val.split("/");
+        return `${year}-${month.padStart(2, "0")}-01`;
+      };
+
+      if (!employer && !position) return null; 
+
+      return {
+        employer,
+        last_position_held: position,
+        start_date: convertToSQLDate(startRaw),
+        end_date: endRaw.toLowerCase() === "present"
+          ? null
+          : convertToSQLDate(endRaw),
+        is_current: endRaw.toLowerCase() === "present"
+      };
+    })
+    .filter(Boolean);
+
+  const alumniDegs = graduationInfo.map(g => ({
+    degree_name: g.degree_name
+  }));
+
+  const activeOrgsInput =
+    form.querySelector('input[placeholder="Org1, org2, org3"]').value;
+
+  const activeOrgs = activeOrgsInput
+    .split(",")
+    .map(org => org.trim())
+    .filter(org => org.length > 0)
+    .map(org => ({ organization_name: org }));
+
   const data = {
-    email: accountEmail,      // unique login email
-    password: "123456", // you can still hardcode for testing
+    email: accountEmail,
+    password: "123456",
     last_name: form.querySelector('input[placeholder="Your Full Name"]').value.split(' ')[1] || "",
     first_name: form.querySelector('input[placeholder="Your Full Name"]').value.split(' ')[0] || "",
     middle_name: "",
@@ -105,34 +185,13 @@ async function addAlumni() {
     gender: form.querySelector('input[placeholder="Gender"]').value,
     student_number: form.querySelector('input[placeholder="xxxx-xxxxx"]').value,
     entry_date: form.querySelector('input[placeholder="DD/MM/YYYY"]').value,
-    current_email: form.querySelector('input[placeholder="Your Email"]').value,
+    current_email: userEmail,
     phone_number: form.querySelector('input[placeholder="Your Number"]').value,
     current_address: form.querySelector('input[placeholder="Your Home Address"]').value,
-    graduationInfo: [
-      {
-        year_started: 2015,
-        semester_started: 1,
-        year_graduated: 2019,
-        semester_graduated: 2,
-        latin_honor: 'magna_cum_laude'
-      }
-    ],
-    employmentHist: [
-      {
-        employer: 'Tech Corp',
-        last_position_held: 'Software Engineer',
-        start_date: "2019-05-31",
-        end_date: "2022-12-30",
-        is_current: false
-      }
-    ],
-    alumniDegs: [
-      { degree_name: 'bs math' }
-    ],
-    activeOrgs: [
-      { organization_name: 'cursor' },
-      { organization_name: 'csi' }
-    ]
+    graduationInfo,
+    employmentHist,
+    alumniDegs,
+    activeOrgs
   };
 
   try {
@@ -141,8 +200,10 @@ async function addAlumni() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
+
     const fetched = await response.json();
     console.log("Server Response:", fetched);
+
   } catch (err) {
     console.log("error adding alumni:", err);
   }
