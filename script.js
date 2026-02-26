@@ -57,6 +57,11 @@ function addGraduate() {
     </div>
 
     <div>
+        <label>Year Started</label>
+        <input type="text" placeholder="YYYY">
+    </div>
+    
+    <div>
       <label>Semester Started</label>
       <select>
         <option value="">Select</option>
