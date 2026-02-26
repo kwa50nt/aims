@@ -56,6 +56,24 @@ function addGraduate() {
       <input type="text" placeholder="MM/YYYY">
     </div>
 
+    <div>
+      <label>Semester Started</label>
+      <select>
+        <option value="">Select</option>
+        <option value="1st">1st</option>
+        <option value="2nd">2nd</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Semester Graduated</label>
+      <select>
+        <option value="">Select</option>
+        <option value="1st">1st</option>
+        <option value="2nd">2nd</option>
+      </select>
+    </div>
+    
     <button type="button" class="circle-btn minus" onclick="removeRow(this)">
       <i class="fas fa-minus"></i>
     </button>
@@ -63,7 +81,6 @@ function addGraduate() {
 
   container.appendChild(newRow);
 }
-
 
 function removeRow(button) {
   const row = button.parentElement;

@@ -113,11 +113,31 @@ input {
 }
 
 .graduate-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto;
-  gap: 15px;
-  margin-bottom: 20px;
-  align-items: end;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr) auto;
+    gap: 15px;
+    align-items: end;
+    margin-bottom: 15px;
+}
+
+.graduate-row select {
+    width: 100%;
+    height: 38px;           
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    background-color: #f9f9f9;
+    cursor: pointer;
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
 }
 
 .employment-row label,
