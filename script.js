@@ -71,68 +71,62 @@ function removeRow(button) {
 }
 
 async function addAlumni() {
-  // placeholder data
+  const form = document.querySelector(".alumni-form");
+
+  const userEmail = form.querySelector('input[placeholder="Your Email"]').value;
+  // generate a unique account email for testing
+  const randomSuffix = Math.floor(Math.random() * 100000);
+  const accountEmail = `test+${randomSuffix}@example.com`;
+
   const data = {
-        email: "test10@example.com",
-        password: "123456",
-        last_name: "DoeDoe",
-        first_name: "Jane",
-        middle_name: "",
-        suffix : "",
-        gender: "M",
-        student_number: "2023-59785",
-        entry_date: "2019-06-01",
-        current_email: "test1@example.com",
-        phone_number: "9123456789",
-        current_address: "",
-        graduationInfo: [
-          {
-            year_started: 2015,
-            semester_started: 1,
-            year_graduated: 2019,
-            semester_graduated: 2,
-            latin_honor: 'magna_cum_laude'
-          }
-        ],
-        employmentHist: [
-          {
-            employer: 'Tech Corp',
-            last_position_held: 'Software Engineer',
-            start_date: "2019-05-31",
-            end_date: "2022-12-30",
-            is_current: false
-          }
-        ],
-        alumniDegs: [
-          {
-            degree_name: 'bs math'
-          }
-        ],
-        activeOrgs: [
-          {
-            organization_name: 'cursor',
-          },
-          {
-            organization_name: 'csi'
-          }
-        ]
+    email: accountEmail,      // unique login email
+    password: "123456", // you can still hardcode for testing
+    last_name: form.querySelector('input[placeholder="Your Full Name"]').value.split(' ')[1] || "",
+    first_name: form.querySelector('input[placeholder="Your Full Name"]').value.split(' ')[0] || "",
+    middle_name: "",
+    suffix: "",
+    gender: form.querySelector('input[placeholder="Gender"]').value,
+    student_number: form.querySelector('input[placeholder="xxxx-xxxxx"]').value,
+    entry_date: form.querySelector('input[placeholder="DD/MM/YYYY"]').value,
+    current_email: form.querySelector('input[placeholder="Your Email"]').value,
+    phone_number: form.querySelector('input[placeholder="Your Number"]').value,
+    current_address: form.querySelector('input[placeholder="Your Home Address"]').value,
+    graduationInfo: [
+      {
+        year_started: 2015,
+        semester_started: 1,
+        year_graduated: 2019,
+        semester_graduated: 2,
+        latin_honor: 'magna_cum_laude'
+      }
+    ],
+    employmentHist: [
+      {
+        employer: 'Tech Corp',
+        last_position_held: 'Software Engineer',
+        start_date: "2019-05-31",
+        end_date: "2022-12-30",
+        is_current: false
+      }
+    ],
+    alumniDegs: [
+      { degree_name: 'bs math' }
+    ],
+    activeOrgs: [
+      { organization_name: 'cursor' },
+      { organization_name: 'csi' }
+    ]
   };
 
   try {
-    // fetching the server
     const response = await fetch("http://localhost:3000/add-alumni", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
-
-    // result of fetching
     const fetched = await response.json();
     console.log("Server Response:", fetched);
-  }
-  catch (err){
+  } catch (err) {
     console.log("error adding alumni:", err);
   }
 }
@@ -171,7 +165,7 @@ async function getAlumnis(){
     
 
     // result of fetching
-    const fetched = JSON.parse(await response.json());
+    const fetched = await response.json();
     console.log(JSON.stringify(fetched));
     renderAlumniTable(fetched);
     // console.log(fetched["56"]);

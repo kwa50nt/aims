@@ -55,7 +55,7 @@ app.post("/add-alumni", async (req, res) => {
     } else {
       role_id = roleResult.rows[0].role_id;
     }
-
+    console.log("Inserting webaccount:", email, password, role_id);
     const accountResult = await client.query(
       `INSERT INTO webaccount (email, password, role_id)
        VALUES ($1, $2, $3)
@@ -226,63 +226,51 @@ app.delete("/delete-alumni/:id", async (req, res) => {
     client.release();
   }
 });
-
 app.get("/get-alumnis", async (req, res) => {
-  const id = req.params.id;
-
   const client = await pool.connect();
-
   try {
-    await client.query("BEGIN");
-    console.log("begin getting alumni");
-    alumnis = await client.query("SELECT * FROM upsealumni ");
-    alumniDict = Object.fromEntries(alumnis.rows.map(row=> {
-        const newRow = {
-          ... row,
-          "graduationInfo": [],
-          "employmentHist": [],
-          "alumniDegs": [],
-          "activeOrgs": [],
+    const alumnis = await client.query("SELECT * FROM upsealumni");
+    const alumniDict = Object.fromEntries(
+      alumnis.rows.map(row => [
+        row.alumni_id,
+        {
+          ...row,
+          graduationInfo: [],
+          employmentHist: [],
+          alumniDegs: [],
+          activeOrgs: []
         }
-        return [row.alumni_id, newRow];
-      }));
-    graduationInfo = await client.query("SELECT * FROM graduationinfo");
-    employmentHistory = await client.query("SELECT * FROM employmenthistory ");
-    alumniDegrees = await client.query("SELECT * FROM alumnidegrees ");
-    activeOrganizations = await client.query("SELECT * FROM activeorganizations ");
+      ])
+    );
 
-    // const appendToAlumni = (arr, dest) => {
-    //   arr.forEach(r => {
-    //     if (!r) return;
-    //     alumniDict[r.alumni_id.toString()].dest.push(r);
-    //   });
-    // }
+    const graduationInfo = await client.query("SELECT * FROM graduationinfo");
+    const employmentHistory = await client.query("SELECT * FROM employmenthistory");
+    const alumniDegrees = await client.query("SELECT * FROM alumnidegrees");
+    const activeOrganizations = await client.query("SELECT * FROM activeorganizations");
+
+    graduationInfo.rows.forEach(r => {
+      if (alumniDict[r.alumni_id]) alumniDict[r.alumni_id].graduationInfo.push(r);
+    });
+    employmentHistory.rows.forEach(r => {
+      if (alumniDict[r.alumni_id]) alumniDict[r.alumni_id].employmentHist.push(r);
+    });
     alumniDegrees.rows.forEach(r => {
-      alumniDict[r.alumni_id.toString()].alumniDegs.push(r.degree_name);
+      if (alumniDict[r.alumni_id]) alumniDict[r.alumni_id].alumniDegs.push(r.degree_name);
     });
     activeOrganizations.rows.forEach(r => {
-      alumniDict[r.alumni_id.toString()].activeOrgs.push(r.organization_name);
+      if (alumniDict[r.alumni_id]) alumniDict[r.alumni_id].activeOrgs.push(r.organization_name);
     });
-    for (i = 0 ; i < graduationInfo.rows.length; i++){
-      alumID = graduationInfo.rows[i].alumni_id.toString();
-      alumniDict[alumID].graduationInfo.push(graduationInfo.rows[i]);
-    }
-    for (i = 0 ; i < employmentHistory.rows.length; i++){
-      alumID = employmentHistory.rows[i].alumni_id.toString();
-      alumniDict[alumID].employmentHist.push(employmentHistory.rows[i]);
-    }
-    console.log(alumniDict);
-    console.log(alumniDict["56"].employmentHist);
-    console.log(alumniDict["57"].employmentHist);
-    res.json(JSON.stringify(alumniDict));
+
+    // send as JSON
+    res.json(alumniDict);
 
   } catch (err) {
-    await client.query("ROLLBACK");
     res.status(500).json({ error: err.message });
   } finally {
     client.release();
   }
 });
+
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
 });
