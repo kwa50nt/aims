@@ -73,15 +73,49 @@ function removeRow(button) {
 async function addAlumni() {
   // placeholder data
   const data = {
-        email: "test1@example.com",
+        email: "test10@example.com",
         password: "123456",
-        role_name: "Alumni",
-        last_name: "Doe",
+        last_name: "DoeDoe",
         first_name: "Jane",
+        middle_name: "",
+        suffix : "",
         gender: "M",
-        student_number: "2023-02154",
+        student_number: "2023-59785",
+        entry_date: "2019-06-01",
         current_email: "test1@example.com",
-        phone_number: "9123456789"
+        phone_number: "9123456789",
+        current_address: "",
+        graduationInfo: [
+          {
+            year_started: 2015,
+            semester_started: 1,
+            year_graduated: 2019,
+            semester_graduated: 2,
+            latin_honor: 'magna_cum_laude'
+          }
+        ],
+        employmentHist: [
+          {
+            employer: 'Tech Corp',
+            last_position_held: 'Software Engineer',
+            start_date: "2019-05-31",
+            end_date: "2022-12-30",
+            is_current: false
+          }
+        ],
+        alumniDegs: [
+          {
+            degree_name: 'bs math'
+          }
+        ],
+        activeOrgs: [
+          {
+            organization_name: 'cursor',
+          },
+          {
+            organization_name: 'csi'
+          }
+        ]
   };
 
   try {

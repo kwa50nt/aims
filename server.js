@@ -18,17 +18,24 @@ app.post("/add-alumni", async (req, res) => {
   const {
     email,
     password,
-    role_name,
     last_name,
     first_name,
+    middle_name,
+    suffix,
     gender,
     student_number,
+    entry_date,
     current_email,
-    phone_number
+    phone_number,
+    current_address,
+    graduationInfo,
+    employmentHist,
+    alumniDegs,
+    activeOrgs
   } = req.body;
 
   const client = await pool.connect();
-
+  const role_name = "Alumni"
   try {
     await client.query("BEGIN");
 
@@ -60,20 +67,129 @@ app.post("/add-alumni", async (req, res) => {
 
     const alumniResult = await client.query(
       `INSERT INTO upsealumni
-       (last_name, first_name, gender, student_number, current_email, phone_number, account_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)
+       (
+        last_name, 
+        first_name, 
+        middle_name, 
+        suffix, 
+        gender, 
+        student_number, 
+        entry_date,
+        current_email, 
+        phone_number, 
+        current_address,
+        account_id
+        )
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
        RETURNING *`,
       [
         last_name,
         first_name,
+        middle_name,
+        suffix,
         gender,
         student_number,
+        entry_date,
         current_email,
         phone_number,
+        current_address,
         account_id
       ]
     );
+    const alumni_id = alumniResult.rows[0].alumni_id;
+    console.log(alumniResult.rows[0]);
+    let gradInfoEntry;
+    for (i = 0 ; i < graduationInfo.length; i++){
+      gradInfoEntry = graduationInfo[i];
+      await client.query(
+        `INSERT INTO graduationinfo
+        (
+          alumni_id, 
+          year_started, 
+          semester_started, 
+          year_graduated, 
+          semester_graduated, 
+          latin_honor
+          )
 
+        VALUES ($1,$2,$3,$4,$5,$6)
+        RETURNING *`,
+        [
+          alumni_id, 
+          gradInfoEntry.year_started, 
+          gradInfoEntry.semester_started, 
+          gradInfoEntry.year_graduated, 
+          gradInfoEntry.semester_graduated, 
+          gradInfoEntry.latin_honor
+        ]
+      );
+    }
+
+    let employmentHistEntry;
+    for (i = 0 ; i < employmentHist.length; i++){
+      employmentHistEntry = employmentHist[i];
+      await client.query(
+        `INSERT INTO employmenthistory
+        (
+          alumni_id, 
+          employer, 
+          last_position_held, 
+          start_date, 
+          end_date, 
+          is_current
+          )
+
+        VALUES ($1,$2,$3,$4,$5,$6)
+        RETURNING *`,
+        [
+          alumni_id, 
+          employmentHistEntry.employer, 
+          employmentHistEntry.last_position_held, 
+          employmentHistEntry.start_date, 
+          employmentHistEntry.end_date, 
+          employmentHistEntry.is_current
+        ]
+      );
+    }
+
+    let alumnidegreeEntry;
+    for (i = 0 ; i < alumniDegs.length; i++){
+      alumnidegreeEntry = alumniDegs[i];
+      await client.query(
+        `INSERT INTO alumnidegrees
+        (
+          alumni_id, 
+          degree_name
+          )
+
+        VALUES ($1,$2)
+        RETURNING *`,
+        [
+          alumni_id, 
+          alumnidegreeEntry.degree_name
+        ]
+      );
+    }
+    
+    let activeOrgEntry;
+    for (i = 0 ; i < activeOrgs.length; i++){
+      activeOrgEntry = activeOrgs[i];
+      await client.query(
+        `INSERT INTO activeorganizations
+        (
+          alumni_id, 
+          organization_name
+          )
+
+        VALUES ($1,$2)
+        RETURNING *`,
+        [
+          alumni_id, 
+          activeOrgEntry.organization_name
+        ]
+      );
+    }
+    
     await client.query("COMMIT");
 
     res.json(alumniResult.rows[0]);
