@@ -1,0 +1,115 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', Arial, sans-serif;
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f2f2f2;
+}
+
+/* top bar */
+.top-header {
+    height: 70px;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    padding: 0 30px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+#upse-logo {
+    height: 70px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+}
+
+.system-title {
+    margin-left: 40px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #02451C;
+}
+
+
+
+.login-wrapper {
+    flex: 1;
+    display: flex;
+}
+
+/* left side of site */
+.login-left {
+    width: 50%;
+    background-color: #eaeaea;
+    display: flex;
+    align-items: center;
+    padding-left: 100px;
+}
+
+.login-box {
+    width: 350px;
+}
+
+.login-box h2 {
+    font-size: 48px;
+    margin-bottom: 30px;
+}
+
+/* buttons and fields */
+.login-box form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.login-box input {
+    padding: 12px 18px;
+    border-radius: 25px;
+    border: none;
+    background-color: #dcdcdc;
+    outline: none;
+    font-size: 14px;
+}
+
+.login-box button {
+    width: 120px;
+    padding: 8px;
+    border-radius: 25px;
+    border: 1px solid #751518;
+    background: transparent;
+    color: #751518;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.login-box button:hover {
+    background-color: #751518;
+    color: white;
+}
+
+.register-text {
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.register-text a {
+    color: #751518;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.register-text a:hover {
+    text-decoration: underline;
+}
+
+/* the big image) */
+.login-right {
+    width: 50%;
+    background-color: #ccc; /* placeholder */
+}
