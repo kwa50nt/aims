@@ -133,7 +133,8 @@ main {
     margin: 0 1vw;
 }
 
-main > div {
+.alumni-header,
+.alumni-row {
     display: grid;
     grid-template-columns: 1fr 8fr 1fr 3fr 3fr 7fr 15fr 15fr 2fr;
     align-items: center;
