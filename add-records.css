@@ -114,7 +114,7 @@ input {
 
 .graduate-row {
     display: grid;
-    grid-template-columns: repeat(5, 1fr) auto;
+    grid-template-columns: repeat(6, 1fr) auto;
     gap: 15px;
     align-items: end;
     margin-bottom: 15px;
