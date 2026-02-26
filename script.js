@@ -102,38 +102,48 @@ async function addAlumni() {
   const accountEmail = `test+${randomSuffix}@example.com`;
 
   const graduationInfo = Array.from(
-    document.querySelectorAll("#graduate-container .graduate-row")
-  )
-    .map(row => {
-      const degree = row.querySelector('input[placeholder="Degree"]').value.trim();
-      const latinHonor = row.querySelector('input[placeholder="Latin Honor"]').value.trim();
-      const gradYearInput = row.querySelector('input[placeholder="MM/YYYY"]').value;
+  document.querySelectorAll("#graduate-container .graduate-row")
+)
+  .map(row => {
+    const degree = row.querySelector('input[placeholder="Degree"]').value.trim();
+    const latinHonor = row.querySelector('input[placeholder="Latin Honor"]').value.trim();
 
-      const year_graduated = gradYearInput && gradYearInput.includes("/")
+    const gradYearInput = row.querySelector('input[placeholder="MM/YYYY"]').value.trim();
+    const yearStartedInput = row.querySelector('input[placeholder="YYYY"]').value.trim();
+
+    const year_graduated =
+      gradYearInput && gradYearInput.includes("/")
         ? parseInt(gradYearInput.split("/")[1])
         : null;
 
-      const selects = row.querySelectorAll("select");
+    const year_started =
+      yearStartedInput ? parseInt(yearStartedInput) : null;
 
-      const semester_started =
-        selects[0]?.value === "1st" ? 1 :
-        selects[0]?.value === "2nd" ? 2 :
-        null;
+    const selects = row.querySelectorAll("select");
 
-      const semester_graduated =
-        selects[1]?.value === "1st" ? 1 :
-        selects[1]?.value === "2nd" ? 2 :
-        null;
+    const semester_started =
+      selects[0]?.value === "1st" ? 1 :
+      selects[0]?.value === "2nd" ? 2 :
+      null;
 
-      return {
-        degree_name: degree,
-        latin_honor: latinHonor || null,
-        year_graduated,
-        semester_started,
-        semester_graduated
-      };
-    })
-    .filter(Boolean);
+    const semester_graduated =
+      selects[1]?.value === "1st" ? 1 :
+      selects[1]?.value === "2nd" ? 2 :
+      null;
+
+    // Skip completely empty rows
+    if (!degree && !year_started && !year_graduated) return null;
+
+    return {
+      degree_name: degree,
+      year_started,
+      semester_started,
+      year_graduated,
+      semester_graduated,
+      latin_honor: latinHonor || null
+    };
+  })
+  .filter(Boolean);
 
   const employmentHist = Array.from(
     document.querySelectorAll("#employment-container .employment-row")
