@@ -37,19 +37,43 @@
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
-      <div class="sidebar-item">
+      <div class="sidebar-item active-sidebar" id="sidebar-excel" onclick="showView('excel')">
         <i class="fas fa-file-excel"></i> Excel Import
       </div>
-      <div class="sidebar-item active">
+      <div class="sidebar-item" id="sidebar-add" onclick="showView('add')">
         <i class="fas fa-user-plus"></i> Add Alumni
       </div>
-      <div class="sidebar-item">
+      <div class="sidebar-item" id="sidebar-confirm" onclick="showView('confirm')">
         <i class="fas fa-user-check"></i> Confirm Alumni Registration
       </div>
     </aside>
 
+    <!-- EXCEL IMPORT SECTION -->
+     <section class="excel-import-section" id="view-excel">
+      <button class="add-btn select-excel-btn" onclick="loadSampleExcelData()">
+        <i class="fas fa-file-import"></i> Select Excel File
+      </button>
+
+      <div id="excel-table-wrapper" style="display: none;">
+        <main>
+          <div class="alumni-header">
+            <input type="checkbox">
+            <p>Name</p>
+            <p>Sex</p>
+            <p>Student No.</p>
+            <p>Entry Date</p>
+            <p>Active Organizations</p>
+            <p>Employment History</p>
+            <p>Graduate Info</p>
+            <p>Action</p>
+          </div>
+          <div id="import-table-body"></div>
+        </main>
+      </div>
+     </section>
+
     <!-- FORM SECTION -->
-    <section class="form-section">
+    <section class="form-section" id="view-add" style="display: none;">
       <form class="alumni-form">
         <div class="form-grid">
           <div>
@@ -188,6 +212,8 @@
 
       </form>
     </section>
+
+    <!-- TODO: Confirm alumni registration -->
   </div>
 <script src="script.js"></script>
 </body>

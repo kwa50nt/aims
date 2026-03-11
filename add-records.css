@@ -67,6 +67,12 @@ body {
   transform: scale(0.98);
 }
 
+.sidebar-item.active-sidebar {
+  background-color: #02451C;
+  color: white;
+  font-weight: 600;
+}
+
 .form-section {
   flex: 1;
   background: white;
@@ -159,4 +165,9 @@ input {
 
 .circle-btn.minus {
   background-color: #f1f1f1;
+}
+
+/* Excel import */
+#excel-table-wrapper {
+  margin-top: 2vh;
 }

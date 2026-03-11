@@ -520,3 +520,86 @@ document.addEventListener("DOMContentLoaded", () => {
     getAlumnis();
   }
 });
+
+// Add Records Tab view switching
+function showView(view) {
+  const views = ['excel', 'add', 'confirm'];
+  const sidebar = { excel: 'sidebar-excel', add: 'sidebar-add', confirm: 'sidebar-confirm' };
+
+  views.forEach(v => {
+    const el = document.getElementById('view-' + v);
+    if (el) el.style.display = (v === view) ? (v === 'excel' ? 'block' : 'flex') : 'none';
+    const sidebarEl = document.getElementById(sidebar[v]);
+    if (sidebarEl) sidebarEl.classList.toggle('active-sidebar', v === view);
+  });
+}
+
+function loadSampleExcelData() {
+  const wrapper = document.getElementById('excel-table-wrapper');
+  const body = document.getElementById('import-table-body');
+
+  if (wrapper.style.display === 'block') return;  // already loaded
+
+  body.innerHTML = `
+    <div class="alumni-row">
+      <input type="checkbox">
+      <div class="name-cell">
+        <img src="assets/email popup.png" alt="">
+        <img src="assets/number popup.png" alt="">
+        <img src="assets/location popup.png" alt="">
+        <p>Sample text</p>
+      </div>
+      <p>M</p>
+      <p>XXXX-XXXXX</p>
+      <p>MM-YYYY</p>
+      <div class="orgs-cell">
+        <div class="mini-info">
+        <img src="assets/black-circle.png" alt="">
+        <p>Label one</p>
+    </div>
+      </div>
+      <div class="work-cell">
+        <img src="assets/CaretCircleDown.png" alt="">
+        <div class="mini-info">
+          <img src="assets/black-circle.png" alt="">
+          <p>Employer</p>
+        </div>
+        <div class="mini-info">
+          <img src="assets/Suitcase.png" alt="">
+          <p>Position</p>
+        </div>
+        <div class="mini-info">
+          <img src="assets/calendar.png" alt="">
+          <p>Start - End</p>
+        </div>
+      </div>
+      <div class="grad-cell">
+        <div class="mini-info">
+          <img src="assets/GraduationCap.png" alt="">
+          <p>Degree</p>
+        </div>
+        <div class="mini-info">
+          <img src="assets/Student.png" alt="">
+          <p>Latin Honors</p>
+        </div>
+        <div class="mini-info">
+          <img src="assets/calendar.png" alt="">
+          <p>MM/YYYY</p>
+        </div>
+      </div>
+      <div>
+        <img src="assets/trash.png" alt="Delete">
+      </div>
+    </div>
+  `.repeat(5);
+
+  wrapper.style.display = 'block';
+}
+
+
+// Start with Excel view when opening Add Records tab
+document.addEventListener("DOMContentLoaded", () => {
+  if (document.getElementById('sidebar-excel')) {
+    showView('excel');
+  }
+});
