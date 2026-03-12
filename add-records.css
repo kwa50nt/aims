@@ -3,6 +3,81 @@ body {
   font-family: 'Inter', Arial, Calibri, sans-serif;
 }
 
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #8b0f0f;
+    padding: 10px 20px 10px 0px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-left h1 {
+    color: white;
+    font-size: 24px;
+    font-weight: 500;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#upse-logo {
+    height: 71px;
+    width: auto;
+    object-fit: contain;
+}
+
+.profile-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: #f0f0f0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.profile-btn:hover {
+    background: #e2e2e2;
+}
+
+.admin-panel {
+    display: none;
+    position: absolute;
+    right: 20px;
+    top: 70px;
+    width: 220px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 15px;
+    z-index: 1000;
+}
+
+.admin-panel h3 {
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.admin-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 14px;
+}
+
 .nav-container {
   display: flex;
   align-items: center;
@@ -29,7 +104,6 @@ body {
 .add-btn:hover {
   opacity: 0.9;
 }
-
 
 .main-container {
   display: flex;
@@ -66,6 +140,13 @@ body {
   font-weight: bold;
   transform: scale(0.98);
 }
+
+.sidebar-item.active-sidebar {
+  background-color: #02451C;
+  color: white;
+  font-weight: 600;
+}
+
 
 .form-section {
   flex: 1;
@@ -159,4 +240,8 @@ input {
 
 .circle-btn.minus {
   background-color: #f1f1f1;
+}
+
+#excel-table-wrapper {
+  margin-top: 2vh;
 }
