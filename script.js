@@ -1,3 +1,4 @@
+const portNumberBackEnd = 3001
 function addEmployment() {
   const container = document.getElementById("employment-container");
 
@@ -213,7 +214,7 @@ async function addAlumni() {
   };
 
   try {
-    const response = await fetch("http://localhost:3000/add-alumni", {
+    const response = await fetch(`http://localhost:${portNumberBackEnd}/add-alumni`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
@@ -262,7 +263,7 @@ async function deleteAlumni(){
 alumniId = "50"; // will work kahit wala sa databse 
   try {
     // fetching the server
-    const response = await fetch(`http://localhost:3000/delete-alumni/${alumniId}`, {
+    const response = await fetch(`http://localhost:${portNumberBackEnd}/delete-alumni/${alumniId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json"
@@ -283,7 +284,7 @@ async function getAlumnis(){
   try {
     // frontend: comment out the fetching and result of fetching para di mag error sainyo
     // fetching the server
-    const response = await fetch(`http://localhost:3000/get-alumnis`, {
+    const response = await fetch(`http://localhost:${portNumberBackEnd}/get-alumnis`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"

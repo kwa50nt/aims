@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Add Alumni Records', () => {
   test('Add alumni with invalid gender', async ({ page }) => {
 
-    await page.goto('http://localhost:5500/add-records.html');
+    await page.goto('http://localhost:3000/add-records.html');
 
     await page.click('#sidebar-add');
 
@@ -27,7 +27,7 @@ test.describe('Add Alumni Records', () => {
 
   test('Add alumni with invalid student number', async ({ page }) => {
 
-    await page.goto('http://localhost:5500/add-records.html');
+    await page.goto('http://localhost:3000/add-records.html');
 
     await page.click('#sidebar-add');
 
@@ -51,13 +51,14 @@ test.describe('Add Alumni Records', () => {
 
   test('Add alumni with missing email', async ({ page }) => {
 
-    await page.goto('http://localhost:5500/add-records.html');
+    await page.goto('http://localhost:3000/add-records.html');
 
     await page.click('#sidebar-add');
 
     await page.fill('input[placeholder="Your Full Name"]', 'Email Test');
     await page.fill('input[placeholder="Gender"]', 'M');
     await page.fill('input[placeholder="xxxx-xxxxx"]', '2023-12345');
+    await page.fill('input[placeholder="Your Number"]', '9123456789');
     await page.fill('input[placeholder="Your Number"]', '9123456789');
 
     const dialogPromise = page.waitForEvent('dialog');
