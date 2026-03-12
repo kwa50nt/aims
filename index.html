@@ -40,14 +40,16 @@
             <input type="text" placeholder="Search">
         </div>
         <div class="selected-count">
-            <img src="assets/calendar.png" alt="">
-            <p>0 selected</p>
+            <p><span id="selected-label">0</span> selected</p>
         </div>
+        <button class="export-btn" onclick="exportEmails()" id="export-btn">
+            Export Emails
+        </button>
     </div>
 
     <main>
         <div class="alumni-header">
-            <input type="checkbox">
+            <input class="header-checkbox" type="checkbox">
             <p>Name</p>
             <p>Sex</p>
             <p>Student No.</p>
@@ -63,7 +65,7 @@
         </div>
 
         <!-- Commented out the hardcoded entries -->
-        <!-- <div>
+        <!-- <div class="alumni-table-body">
             <input type="checkbox">
             <div class="name-cell">
                 <img src="assets/email popup.png" alt="">
