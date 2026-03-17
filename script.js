@@ -197,8 +197,8 @@ async function addAlumni() {
   const data = {
     email: accountEmail,
     password: "123456",
-    last_name: form.querySelector('input[placeholder="Your Full Name"]').value.split(' ')[1] || "",
-    first_name: form.querySelector('input[placeholder="Your Full Name"]').value.split(' ')[0] || "",
+    last_name: form.querySelector('input[placeholder="Your Full Name"]').value.split(' ')[1] || null,
+    first_name: form.querySelector('input[placeholder="Your Full Name"]').value.split(' ')[0] || null,
     middle_name: "",
     suffix: "",
     gender: form.querySelector('input[placeholder="Gender"]').value,
@@ -280,141 +280,16 @@ alumniId = "50"; // will work kahit wala sa databse
   }
 }
 
-async function getAlumnis(){
+async function getAlumnis(sortBy = "none", order= "none"){
   try {
     // frontend: comment out the fetching and result of fetching para di mag error sainyo
     // fetching the server
-    const response = await fetch(`http://localhost:${portNumberBackEnd}/get-alumnis`, {
+    const response = await fetch(`http://localhost:${portNumberBackEnd}/get-alumnis?sortBy=${sortBy}&order=${order}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
       }
     });
-
-    // const fetched = {
-    //   '56': {
-    //     alumni_id: '56',
-    //     last_name: 'Doe',
-    //     first_name: 'John',
-    //     middle_name: null,
-    //     suffix: null,
-    //     gender: 'M',
-    //     student_number: '2023-12345',
-    //     entry_date: null,
-    //     current_email: 'john@example.com',
-    //     phone_number: '9123456789',
-    //     current_address: null,
-    //     account_id: 104,
-    //     graduationInfo: [
-    //       {
-    //         graduation_id: '2',
-    //         alumni_id: 56,
-    //         year_started: 2015,
-    //         semester_started: 1,
-    //         year_graduated: 2019,
-    //         semester_graduated: 2,
-    //         latin_honor: 'magna_cum_laude'
-    //       }
-    //     ],
-    //     employmentHist: [
-    //       {
-    //         employment_id: '1',
-    //         alumni_id: 56,
-    //         employer: 'Tech Corp',
-    //         last_position_held: 'Software Engineer',
-    //         start_date: "2019-05-31T16:00:00.000Z",
-    //         end_date: "2022-12-30T16:00:00.000Z",
-    //         is_current: false
-    //       }
-    //     ],
-    //     alumniDegs: [ 'bs math' ],
-    //     activeOrgs: [ 'cursor', 'cursor', 'csi' ]
-    //   },
-    //   '57': {
-    //     alumni_id: '57',
-    //     last_name: 'Doe',
-    //     first_name: 'Jane',
-    //     middle_name: null,
-    //     suffix: null,
-    //     gender: 'M',
-    //     student_number: '2023-02154',
-    //     entry_date: null,
-    //     current_email: 'test1@example.com',
-    //     phone_number: '9123456789',
-    //     current_address: null,
-    //     account_id: 105,
-    //     graduationInfo: [
-    //       {
-    //         graduation_id: '3',
-    //         alumni_id: 57,
-    //         year_started: 2015,
-    //         semester_started: 1,
-    //         year_graduated: 2019,
-    //         semester_graduated: 2,
-    //         latin_honor: 'summa_cum_laude'
-    //       }
-    //     ],
-    //     employmentHist: [
-    //       {
-    //         employment_id: '2',
-    //         alumni_id: 57,
-    //         employer: 'Startup',
-    //         last_position_held: 'Quality control',
-    //         start_date: "2019-05-31T16:00:00.000Z",
-    //         end_date: "2022-12-30T16:00:00.000Z",
-    //         is_current: true
-    //       }
-    //     ],
-    //     alumniDegs: [ 'bs cs' ],
-    //     activeOrgs: [ 'csi' ]
-    //   }
-    // };
-  //   format of data is
-  //   {
-  //     "alumni_id" : {
-  //     "last_name" : "data",
-  //     "first_name" : "data",
-  //     "middle_name" : "data",
-  //     "suffix" : "data",
-  //     "gender" : "data",
-  //     "student_number" : "data",
-  //     "entry_date" : "data",
-  //     "current_email" : "data",
-  //     "phone_number" : "data",
-  //     "current_address" : "data",
-  //     "account_id" : "data",
-  //     "graduationInfo": [ 
-  //       {
-  //         "graduation_id" : "data"
-  //         "alumni_id" : "data"
-  //         "year_started" : "data"
-  //         "semester_started" : "data"
-  //         "year_graduated" : "data"
-  //         "semester_graduated" : "data"
-  //         "latin_honor" : "data"
-  //       }
-  //     ],
-  //     "employmentHist" : [
-  //       {
-  //         "employer" : "data",
-  //         "last_position_held" : "2019-05-31T16:00:00.000Z", //sorry ganito kasi date obj ng js
-  //         "start_date" : "data",
-  //         "end_date" : "data",
-  //         "is_current" : "FALSE || TRUE",
-  //       }
-  //     ],
-  //     "alumniDegs" : [
-  //       {
-  //         "degree_name" : "data"
-  //       }
-  //     ],
-  //     "activeOrgs" : [
-  //       {
-  //         "organization_name" : "name"
-  //       }
-  //     ],
-  //   }
-  // }
     
     // result of fetching
     const fetched = await response.json();

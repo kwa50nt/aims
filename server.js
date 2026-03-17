@@ -228,10 +228,31 @@ app.delete("/delete-alumni/:id", async (req, res) => {
 app.get("/get-alumnis", async (req, res) => {
   const client = await pool.connect();
   try {
-    const alumnis = await client.query("SELECT * FROM upsealumni");
+    const { 
+      sortBy = "none", 
+      order = "none" } = req.query;
+    
+    let SQLQuery =  "SELECT * FROM upsealumni";
+    console.log(sortBy, order);
+    if (sortBy != "none"){
+      if (sortBy == "last_name"){
+        SQLQuery = SQLQuery + " ORDER BY " + sortBy + " " + order + ", first_name " + order;
+      }
+      else{
+        SQLQuery = SQLQuery + " ORDER BY " + sortBy + " " + order;
+      }
+    }
+
+    console.log("done",SQLQuery);
+    const alumnis = await client.query(SQLQuery);
+    const graduationInfo = await client.query("SELECT * FROM graduationinfo");
+    const employmentHistory = await client.query("SELECT * FROM employmenthistory");
+    const alumniDegrees = await client.query("SELECT * FROM alumnidegrees");
+    const activeOrganizations = await client.query("SELECT * FROM activeorganizations");
+    console.log(alumnis);
     const alumniDict = Object.fromEntries(
-      alumnis.rows.map(row => [
-        row.alumni_id,
+      alumnis.rows.map((row, index) => [
+        index,
         {
           ...row,
           graduationInfo: [],
@@ -241,11 +262,6 @@ app.get("/get-alumnis", async (req, res) => {
         }
       ])
     );
-
-    const graduationInfo = await client.query("SELECT * FROM graduationinfo");
-    const employmentHistory = await client.query("SELECT * FROM employmenthistory");
-    const alumniDegrees = await client.query("SELECT * FROM alumnidegrees");
-    const activeOrganizations = await client.query("SELECT * FROM activeorganizations");
 
     graduationInfo.rows.forEach(r => {
       if (alumniDict[r.alumni_id]) alumniDict[r.alumni_id].graduationInfo.push(r);
@@ -269,7 +285,8 @@ app.get("/get-alumnis", async (req, res) => {
     client.release();
   }
 });
-const portNumber = 3001
+
+const portNumber = 3001;
 app.listen(3001, () => {
   console.log("Server running on http://localhost:", portNumber);
 });

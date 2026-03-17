@@ -53,7 +53,7 @@
     <!-- Add filters -->
     <div class="filter-controls">
         <div class="filter-dropdown">
-            <img src="assets/funnel.png" alt="">
+            <img src="assets/funnel.png" alt="" onclick="getAlumnis()"  >
             <p>All</p>
             <img src="assets/down.png" alt="">
         </div>
@@ -72,10 +72,10 @@
     <main>
         <div class="alumni-header">
             <input class="header-checkbox" type="checkbox">
-            <p>Name</p>
-            <p>Sex</p>
-            <p>Student No.</p>
-            <p>Entry Date</p>
+            <p onclick="getAlumnis('last_name', 'asc')">Name</p>
+            <p onclick="getAlumnis('gender', 'asc')">Sex</p>
+            <p onclick="getAlumnis('student_number', 'asc')">Student No.</p>
+            <p onclick="getAlumnis('entry_date', 'asc')">Entry Date</p>
             <p>Active Organizations</p>
             <p>Employment History</p>
             <p>Graduate Info</p>
@@ -139,7 +139,7 @@
             </div>
             <div>
                 <img src="assets/edit.png" alt="">
-                <img src="assets/trash.png" alt="">
+                <img src="assets/trash.png" alt="" >
             </div>
         </div>
         <div>
