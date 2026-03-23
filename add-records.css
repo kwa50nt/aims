@@ -119,6 +119,19 @@ body {
   margin-bottom: 6px;
 }
 
+.name-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1.5fr 1fr 1fr;
+  gap: 10px;
+}
+
+.input-hint {
+  display: block;
+  font-size: 12px;
+  color: #888;
+  margin-top: 4px;
+}
+
 input {
   width: 100%;
   padding: 10px;
@@ -151,24 +164,48 @@ input {
     margin-bottom: 15px;
 }
 
+.graduate-row.full-width {
+  grid-template-columns: 1fr;
+}
+
+.achievements-row {
+  grid-template-columns: 1fr !important;
+}
+
 .graduate-row select {
-    width: 100%;
-    height: 38px;           
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-family: inherit;
-    font-size: 14px;
-    background-color: #f9f9f9;
-    cursor: pointer;
+  width: 100%;
+  padding: 10px;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+  font-family: 'Inter', Arial, Calibri, sans-serif;
+  font-size: 14px;
+  appearance: none;
+}
 
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
+select:invalid {
+  color: #888
+}
 
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 12px;
+.achievements-container {
+  margin-top: 10px;
+}
+
+.achievements-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.achievements-row input {
+  width: 100%;
+}
+
+.achievements-row label {
+  font-size: 14px;
+  margin-bottom: 6px;
+  display: block;
+  color: #333;
 }
 
 .employment-row label,

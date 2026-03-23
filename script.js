@@ -1,4 +1,5 @@
 const portNumberBackEnd = 3001
+
 function addEmployment() {
   const container = document.getElementById("employment-container");
 
@@ -8,16 +9,16 @@ function addEmployment() {
   newRow.innerHTML = `
     <div>
       <label>Employer</label>
-      <input type="text" placeholder="Employer">
+      <input type="text" placeholder="e.g. Google, Inc.">
     </div>
 
     <div>
-      <label>Position</label>
-      <input type="text" placeholder="Position">
+      <label>Last Position Held</label>
+      <input type="text" placeholder="e.g. Head Software Engineer">
     </div>
 
     <div>
-      <label>Start</label>
+      <label>Start of Employment</label>
       <input type="text" placeholder="MM/YYYY">
     </div>
 
@@ -34,9 +35,9 @@ function addEmployment() {
   container.appendChild(newRow);
 }
 
-
 function addGraduate() {
   const container = document.getElementById("graduate-container");
+  const achievementsRow = container.querySelector(".achievements-row");
 
   const newRow = document.createElement("div");
   newRow.className = "graduate-row";
@@ -48,24 +49,30 @@ function addGraduate() {
     </div>
 
     <div>
-      <label>Latin Honor</label>
-      <input type="text" placeholder="Latin Honor">
+      <label>Latin Honors</label>
+      <select class="latin-honors" required>
+        <option value="" disabled selected hidden>Latin Honors Achieved</option>
+        <option value="N/A">N/A</option>
+        <option value="Cum Laude">Cum Laude</option>
+        <option value="Magna Cum Laude">Magna Cum Laude</option>
+        <option value="Summa Cum Laude">Summa Cum Laude</option>
+      </select>
     </div>
 
     <div>
       <label>Graduation Year</label>
       <input type="text" placeholder="MM/YYYY">
     </div>
-
-    <div>
-        <label>Year Started</label>
-        <input type="text" placeholder="YYYY">
-    </div>
     
     <div>
+      <label>Year Started</label>
+      <input type="text" placeholder="YYYY">
+    </div>
+
+    <div>
       <label>Semester Started</label>
-      <select>
-        <option value="">Select</option>
+      <select required>
+        <option value="" disabled selected hidden>1st, 2nd</option>
         <option value="1st">1st</option>
         <option value="2nd">2nd</option>
       </select>
@@ -73,19 +80,19 @@ function addGraduate() {
 
     <div>
       <label>Semester Graduated</label>
-      <select>
-        <option value="">Select</option>
+      <select required>
+        <option value="" disabled selected hidden>1st, 2nd</option>
         <option value="1st">1st</option>
         <option value="2nd">2nd</option>
       </select>
     </div>
-    
+
     <button type="button" class="circle-btn minus" onclick="removeRow(this)">
       <i class="fas fa-minus"></i>
     </button>
   `;
 
-  container.appendChild(newRow);
+  container.insertBefore(newRow, achievementsRow);
 }
 
 function removeRow(button) {

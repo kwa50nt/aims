@@ -94,45 +94,52 @@
     <section class="form-section" id="view-add" style="display: none;">
       <form class="alumni-form">
         <div class="form-grid">
-          <div>
-            <label>Full Name</label>
-            <input type="text" placeholder="Your Full Name">
+          <div style="grid-column: span 2;">
+            <label>Your Full Name</label>
+            <div class="name-row">
+              <input type="text" placeholder="First Name">
+              <input type="text" placeholder="Last Name">
+              <input type="text" placeholder="Middle Initial">
+              <input type="text" placeholder="Suffix (e.g. Jr., III, etc. If Any)">
+            </div>
           </div>
 
           <div>
-            <label>Email</label>
-            <input type="email" placeholder="Your Email">
+            <label>Sex Assigned at Birth</label>
+            <input type="text" placeholder="Male/Female">
           </div>
 
           <div>
-            <label>Sex</label>
-            <input type="text" placeholder="Gender">
+            <label>Email Address (Primary)</label>
+            <input type="email" placeholder="jdelacruz@up.edu.ph">
           </div>
 
           <div>
-            <label>Number</label>
-            <input type="text" placeholder="Your Number">
+            <label>Mobile Number (Primary)</label>
+            <input type="text" placeholder="e.g. 09XXXXXXXXX">
           </div>
 
           <div>
-            <label>Student - Number</label>
-            <input type="text" placeholder="xxxx-xxxxx">
-          </div>
-
-          <div>
-            <label>Address</label>
+            <label>Home Address (Primary)</label>
             <input type="text" placeholder="Your Home Address">
           </div>
 
           <div>
-            <label>Active Organizations</label>
-            <input type="text" placeholder="Org1, org2, org3">
+            <label>Student-Number</label>
+            <input type="text" placeholder="xxxx-xxxxx">
+          </div>
+
+          <div>
+            <label>Current Active Organizations</label>
+            <input type="text" placeholder="Org1, Org2, Org3">
           </div>
 
           <div>
             <label>Entry Date</label>
-            <input type="text" placeholder="DD/MM/YYYY">
+            <input type="text" placeholder="MM/YYYY">
+            <small class="input-hint">*When you entered UP Diliman</small>
           </div>
+
         </div>
 
         <div class="section-title">
@@ -146,16 +153,16 @@
         <div class="employment-row">
             <div>
             <label>Employer</label>
-            <input type="text" placeholder="Employer">
+            <input type="text" placeholder="e.g. Google, Inc.">
             </div>
 
             <div>
-            <label>Position</label>
-            <input type="text" placeholder="Position">
+            <label>Last Position Held</label>
+            <input type="text" placeholder="e.g. Head Software Engineer">
             </div>
 
             <div>
-            <label>Start</label>
+            <label>Start of Employment</label>
             <input type="text" placeholder="MM/YYYY">
             </div>
 
@@ -171,59 +178,70 @@
         </div>
 
         <div class="section-title">
-        Graduate Info
+        Academic History
         <button type="button" class="circle-btn" onclick="addGraduate()">
             <i class="fas fa-plus"></i>
         </button>
         </div>
 
         <div id="graduate-container">
+          <div class="graduate-row">
+            <div>
+              <label>Degree</label>
+              <input type="text" placeholder="Degree">
+            </div>
 
-    <div class="graduate-row">
-        <div>
-            <label>Degree</label>
-            <input type="text" placeholder="Degree">
-        </div>
+            <div>
+              <label>Latin Honors</label>
+              <select class="latin-honors" required>
+                <option value="" disabled selected hidden>Latin Honors Achieved</option>
+                <option value="N/A">N/A</option>
+                <option value="Cum Laude">Cum Laude</option>
+                <option value="Magna Cum Laude">Magna Cum Laude</option>
+                <option value="Summa Cum Laude">Summa Cum Laude</option>
+              </select>
+            </div>
 
-        <div>
-            <label>Latin Honor</label>
-            <input type="text" placeholder="Latin Honor">
-        </div>
+            <div>
+              <label>Graduation Year</label>
+              <input type="text" placeholder="MM/YYYY">
+            </div>
+            
+            <div>
+              <label>Year Started</label>
+              <input type="text" placeholder="YYYY">
+            </div>
 
-        <div>
-            <label>Graduation Year</label>
-            <input type="text" placeholder="MM/YYYY">
-        </div>
-        
-        <div>
-            <label>Year Started</label>
-            <input type="text" placeholder="YYYY">
-        </div>
-
-        <div>
-          <label>Semester Started</label>
-            <select>
-                <option value="">Select</option>
+            <div>
+              <label>Semester Started</label>
+              <select required>
+                <option value="" disabled selected hidden>1st, 2nd</option>
                 <option value="1st">1st</option>
                 <option value="2nd">2nd</option>
-            </select>
-        </div>
+              </select>
+            </div>
 
-        <div>
-            <label>Semester Graduated</label>
-            <select>
-                <option value="">Select</option>
+            <div>
+              <label>Semester Graduated</label>
+              <select required>
+                <option value="" disabled selected hidden>1st, 2nd</option>
                 <option value="1st">1st</option>
                 <option value="2nd">2nd</option>
-            </select>
+              </select>
+            </div>
+
+            <button type="button" class="circle-btn minus" onclick="removeRow(this)">
+              <i class="fas fa-minus"></i>
+            </button>
+          </div>
         </div>
 
-        <button type="button" class="circle-btn minus" onclick="removeRow(this)">
-            <i class="fas fa-minus"></i>
-        </button>
-    </div>
-
-</div>
+        <div class="achievements-container">
+          <div class="achievements-row">
+            <label>Other Academic Achievements</label>
+            <input type="text" placeholder="e.g. Best Thesis Awardee, Dean’s Lister, etc.">
+          </div>
+        </div>
 
       </form>
     </section>
