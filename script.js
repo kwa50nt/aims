@@ -316,6 +316,40 @@ async function getAlumnis(sortBy = "none", order= "none"){
 
 }
 
+async function uploadExcel() {
+  const fileInput = document.getElementById("excelFile");
+  const file = fileInput.files[0];
+
+  if (!file) {
+    alert("Please select an Excel file");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await fetch(`http://localhost:${portNumberBackEnd}/upload-excel`, {
+      method: "POST",
+      body: formData
+    });
+
+    const result = await response.json();
+
+    console.log("Server Response:", result);
+
+    if (!response.ok) {
+      alert(result.error || "Upload failed");
+      return;
+    }
+
+    alert("Excel uploaded successfully!");
+  } catch (err) {
+    console.log("error uploading excel:", err);
+    alert("Upload failed");
+  }
+}
+
 function renderAlumniTable(alumniData) {
   const main = document.getElementById("alumni-table-body");
   main.innerHTML = "";
@@ -508,66 +542,67 @@ function showView(view) {
   });
 }
 
-function loadSampleExcelData() {
+async function loadSampleExcelData() {
   const wrapper = document.getElementById('excel-table-wrapper');
   const body = document.getElementById('import-table-body');
 
-  if (wrapper.style.display === 'block') return;  // already loaded
+  // If already visible, don't re-upload
+  if (wrapper.style.display === 'block') return;
 
-  body.innerHTML = `
-    <div class="alumni-row">
-      <input type="checkbox">
-      <div class="name-cell">
-        <img src="assets/email popup.png" alt="">
-        <img src="assets/number popup.png" alt="">
-        <img src="assets/location popup.png" alt="">
-        <p>Sample text</p>
-      </div>
-      <p>M</p>
-      <p>XXXX-XXXXX</p>
-      <p>MM-YYYY</p>
-      <div class="orgs-cell">
-        <div class="mini-info">
-        <img src="assets/black-circle.png" alt="">
-        <p>Label one</p>
-    </div>
-      </div>
-      <div class="work-cell">
-        <img src="assets/CaretCircleDown.png" alt="">
-        <div class="mini-info">
-          <img src="assets/black-circle.png" alt="">
-          <p>Employer</p>
-        </div>
-        <div class="mini-info">
-          <img src="assets/Suitcase.png" alt="">
-          <p>Position</p>
-        </div>
-        <div class="mini-info">
-          <img src="assets/calendar.png" alt="">
-          <p>Start - End</p>
-        </div>
-      </div>
-      <div class="grad-cell">
-        <div class="mini-info">
-          <img src="assets/GraduationCap.png" alt="">
-          <p>Degree</p>
-        </div>
-        <div class="mini-info">
-          <img src="assets/Student.png" alt="">
-          <p>Latin Honors</p>
-        </div>
-        <div class="mini-info">
-          <img src="assets/calendar.png" alt="">
-          <p>MM/YYYY</p>
-        </div>
-      </div>
-      <div>
-        <img src="assets/trash.png" alt="Delete">
-      </div>
-    </div>
-  `.repeat(5);
+  // Create a hidden file input
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".xlsx,.xls";
 
-  wrapper.style.display = 'block';
+  input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch(`http://localhost:${portNumberBackEnd}/upload-excel`, {
+        method: "POST",
+        body: formData
+      });
+
+      const result = await response.json();
+      console.log("Excel upload response:", result);
+
+      if (!response.ok) {
+        alert(result.error || "Upload failed");
+        return;
+      }
+
+      // OPTIONAL: render preview if backend returns data
+      const rows = result.data || [];
+
+      body.innerHTML = rows.map(row => `
+        <div class="alumni-row">
+          <input type="checkbox">
+          <div class="name-cell">
+            <p>${row.first_name || ""} ${row.last_name || ""}</p>
+          </div>
+          <p>${row.gender || "—"}</p>
+          <p>${row.student_number || "—"}</p>
+          <p>${row.entry_date || "—"}</p>
+          <div class="orgs-cell"><p>—</p></div>
+          <div class="work-cell"><p>—</p></div>
+          <div class="grad-cell"><p>—</p></div>
+          <div><p>—</p></div>
+        </div>
+      `).join("");
+
+      wrapper.style.display = 'block';
+
+    } catch (err) {
+      console.log("Excel upload error:", err);
+      alert("Upload failed");
+    }
+  };
+
+  input.click();
 }
 
 

@@ -6,6 +6,28 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+function excelSerialToDate(serial) {
+  if (!serial) return null;
+
+  if (typeof serial === "string") {
+    if (/^\d{4}-\d{1,2}$/.test(serial)) {
+      const [year, month] = serial.split("-");
+      return `${year}-${month.padStart(2, "0")}-01`;
+    }
+    return serial;
+  }
+
+  const utc_days = serial - 25569;
+  const utc_value = utc_days * 86400;
+  const date = new Date(utc_value * 1000);
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 const pool = new Pool({
   user: process.env.PGUSER || "postgres",
   host: process.env.PGHOST || "localhost",
@@ -290,3 +312,84 @@ const portNumber = 3001;
 app.listen(3001, () => {
   console.log("Server running on http://localhost:", portNumber);
 });
+
+const multer = require("multer");
+const XLSX = require("xlsx");
+
+const upload = multer({ storage: multer.memoryStorage() });
+
+app.post("/upload-excel", upload.single("file"), async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+
+    const rows = XLSX.utils.sheet_to_json(sheet);
+
+    await client.query("BEGIN");
+
+    for (const row of rows) {
+      const {
+        email,
+        password,
+        last_name,
+        first_name,
+        middle_name,
+        suffix,
+        gender,
+        student_number,
+        entry_date = excelSerialToDate(row.entry_date),
+        current_email,
+        phone_number,
+        current_address
+      } = row;
+
+      // Insert into webaccount + alumni
+      const roleResult = await client.query(
+        "SELECT role_id FROM userrole WHERE role_name = $1",
+        ["Alumni"]
+      );
+
+      const role_id = roleResult.rows[0]?.role_id;
+
+      await client.query(
+        `INSERT INTO webaccount (email, password, role_id)
+         VALUES ($1, $2, $3)`,
+        [email, password, role_id]
+      );
+
+      const alumniResult = await client.query(
+        `INSERT INTO upsealumni
+        (last_name, first_name, middle_name, suffix, gender, student_number, entry_date, current_email, phone_number, current_address)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+        RETURNING alumni_id`,
+        [
+          last_name,
+          first_name,
+          middle_name,
+          suffix,
+          gender,
+          student_number,
+          entry_date,
+          current_email,
+          phone_number,
+          current_address
+        ]
+      );
+
+      const alumni_id = alumniResult.rows[0].alumni_id;
+    }
+
+    await client.query("COMMIT");
+    res.json({ message: "Excel data imported successfully" });
+
+  } catch (err) {
+    await client.query("ROLLBACK");
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
