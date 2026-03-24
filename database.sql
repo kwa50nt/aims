@@ -38,6 +38,7 @@ CREATE TABLE upsealumni (
   phone_number VARCHAR(20) NOT NULL, 
   current_address VARCHAR(200),
   account_id INT,
+  academic_achievements VARCHAR(100),
   CONSTRAINT upsealumni_ibfk_1 FOREIGN KEY (account_id) 
     REFERENCES webaccount (account_id) ON DELETE CASCADE,
   CONSTRAINT student_number_format 
@@ -51,15 +52,16 @@ CREATE TABLE upsealumni (
 );
 CREATE INDEX account_id_idx ON upsealumni(account_id);
 
-CREATE TABLE graduationinfo (
+CREATE TABLE academichistory (
   graduation_id BIGSERIAL NOT NULL PRIMARY KEY,
+  degree_name VARCHAR(100) NOT NULL,
+  granting_university VARCHAR(100) NOT NULL,
   alumni_id INT NOT NULL,
   year_started INT NOT NULL,
   semester_started INT NOT NULL,
   year_graduated INT,
   semester_graduated INT,
   latin_honor latin_honors,
-
   CONSTRAINT graduationinfo_ibfk_1 FOREIGN KEY (alumni_id) 
     REFERENCES upsealumni (alumni_id) ON DELETE CASCADE
 );
@@ -74,14 +76,6 @@ CREATE TABLE employmenthistory (
   end_date date NOT NULL,
   is_current BOOLEAN DEFAULT FALSE,
   CONSTRAINT employmenthistory_ibfk_1 FOREIGN KEY (alumni_id) 
-    REFERENCES upsealumni (alumni_id) ON DELETE CASCADE
-);
-
-CREATE TABLE alumnidegrees (
-  degree_id BIGSERIAL NOT NULL PRIMARY KEY,
-  alumni_id INT NOT NULL,
-  degree_name VARCHAR(100) NOT NULL,
-  CONSTRAINT alumnidegrees_ibfk_1 FOREIGN KEY (alumni_id) 
     REFERENCES upsealumni (alumni_id) ON DELETE CASCADE
 );
 
