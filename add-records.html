@@ -94,14 +94,29 @@
     <section class="form-section" id="view-add" style="display: none;">
       <form class="alumni-form">
         <div class="form-grid">
-          <div style="grid-column: span 2;">
-            <label>Your Full Name</label>
-            <div class="name-row">
-              <input type="text" placeholder="First Name">
-              <input type="text" placeholder="Last Name">
-              <input type="text" placeholder="Middle Initial">
-              <input type="text" placeholder="Suffix (e.g. Jr., III, etc. If Any)">
-            </div>
+          <div>
+            <label>First Name</label>
+            <input type="text" placeholder="First Name">
+          </div>
+
+          <div>
+            <label>Last Name</label>
+            <input type="text" placeholder="Last Name">
+          </div>
+
+          <div>
+            <label>Middle Initial</label>
+            <input type="text" placeholder="M.I.">
+          </div>
+
+          <div>
+            <label>Suffix (If Any)</label>
+            <input type="text" placeholder="Jr., III, etc.">
+          </div>
+
+          <div>
+            <label>Maiden Name</label>
+            <input type="text" placeholder="Maiden Name">
           </div>
 
           <div>
@@ -130,16 +145,30 @@
           </div>
 
           <div>
-            <label>Current Active Organizations</label>
-            <input type="text" placeholder="Org1, Org2, Org3">
-          </div>
-
-          <div>
             <label>Entry Date</label>
             <input type="text" placeholder="MM/YYYY">
             <small class="input-hint">*When you entered UP Diliman</small>
           </div>
+        </div>
 
+        <div class="section-title">
+          Active Organizations
+          <button type="button" class="circle-btn" onclick="addOrganization()">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+
+        <div id="organization-container">
+          <div class="organization-row">
+            <div>
+              <label>Organization</label>
+              <input type="text" placeholder="First Active Organization">
+            </div>
+
+            <button type="button" class="circle-btn minus" onclick="removeRow(this)">
+              <i class="fas fa-minus"></i>
+            </button>
+          </div>
         </div>
 
         <div class="section-title">
@@ -192,14 +221,8 @@
             </div>
 
             <div>
-              <label>Latin Honors</label>
-              <select class="latin-honors" required>
-                <option value="" disabled selected hidden>Latin Honors Achieved</option>
-                <option value="N/A">N/A</option>
-                <option value="Cum Laude">Cum Laude</option>
-                <option value="Magna Cum Laude">Magna Cum Laude</option>
-                <option value="Summa Cum Laude">Summa Cum Laude</option>
-              </select>
+              <label>University Studied</label>
+              <input type="text" placeholder="e.g. University of the Philippines">
             </div>
 
             <div>
@@ -208,17 +231,8 @@
             </div>
             
             <div>
-              <label>Year Started</label>
-              <input type="text" placeholder="YYYY">
-            </div>
-
-            <div>
-              <label>Semester Started</label>
-              <select required>
-                <option value="" disabled selected hidden>1st, 2nd</option>
-                <option value="1st">1st</option>
-                <option value="2nd">2nd</option>
-              </select>
+              <label>Year and Semester Started</label>
+              <input type="text" placeholder="2nd Sem, 2026">
             </div>
 
             <div>
@@ -241,8 +255,18 @@
             <label>Other Academic Achievements</label>
             <input type="text" placeholder="e.g. Best Thesis Awardee, Dean’s Lister, etc.">
           </div>
+          <br>
+          <div class="achievements-row">
+            <label>Latin Honors</label>
+            <select class="latin-honors" required>
+              <option value="" disabled selected hidden>Latin Honors Achieved</option>
+              <option value="N/A">N/A</option>
+              <option value="Cum Laude">Cum Laude</option>
+              <option value="Magna Cum Laude">Magna Cum Laude</option>
+              <option value="Summa Cum Laude">Summa Cum Laude</option>
+            </select>
+          </div>
         </div>
-
       </form>
     </section>
 

@@ -49,14 +49,8 @@ function addGraduate() {
     </div>
 
     <div>
-      <label>Latin Honors</label>
-      <select class="latin-honors" required>
-        <option value="" disabled selected hidden>Latin Honors Achieved</option>
-        <option value="N/A">N/A</option>
-        <option value="Cum Laude">Cum Laude</option>
-        <option value="Magna Cum Laude">Magna Cum Laude</option>
-        <option value="Summa Cum Laude">Summa Cum Laude</option>
-      </select>
+      <label>University Studied</label>
+      <input type="text" placeholder="e.g. University of the Philippines">
     </div>
 
     <div>
@@ -65,17 +59,8 @@ function addGraduate() {
     </div>
     
     <div>
-      <label>Year Started</label>
-      <input type="text" placeholder="YYYY">
-    </div>
-
-    <div>
-      <label>Semester Started</label>
-      <select required>
-        <option value="" disabled selected hidden>1st, 2nd</option>
-        <option value="1st">1st</option>
-        <option value="2nd">2nd</option>
-      </select>
+      <label>Year and Semester Started</label>
+      <input type="text" placeholder="2nd Sem, 2026">
     </div>
 
     <div>
@@ -94,6 +79,27 @@ function addGraduate() {
 
   container.insertBefore(newRow, achievementsRow);
 }
+
+function addOrganization() {
+  const container = document.getElementById("organization-container");
+
+  const row = document.createElement("div");
+  row.className = "organization-row";
+
+  row.innerHTML = `
+    <div>
+      <label>Organization</label>
+      <input type="text" placeholder="Another Organization">
+    </div>
+
+    <button type="button" class="circle-btn minus" onclick="removeRow(this)">
+      <i class="fas fa-minus"></i>
+    </button>
+  `;
+
+  container.appendChild(row);
+}
+
 
 function removeRow(button) {
   const row = button.parentElement;
