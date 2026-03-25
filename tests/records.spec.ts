@@ -240,17 +240,25 @@ test.describe("Records Page", () => {
   });
 
   test.describe("Checkbox selection", () => {
-    test("selected counter starts at 0", async ({ page }) => {
+    test("initial checkbox count", async ({ page }) => {
       await expect(page.locator("#selected-label")).toHaveText("0");
     });
 
-    test("checking a row increments the selected counter", async ({ page }) => {
+    test("checking/unchecking a row increments the selected counter", async ({ page }) => {
       await page
         .locator(".alumni-row")
         .first()
         .getByRole("checkbox")
         .check();
       await expect(page.locator("#selected-label")).toHaveText("1");
+
+      const checkbox = page
+        .locator(".alumni-row")
+        .first()
+        .getByRole("checkbox");
+      await checkbox.check();
+      await checkbox.uncheck();
+      await expect(page.locator("#selected-label")).toHaveText("0");
     });
 
     test("checking multiple rows reflects the correct count", async ({
@@ -262,19 +270,7 @@ test.describe("Records Page", () => {
       await expect(page.locator("#selected-label")).toHaveText("2");
     });
 
-    test("unchecking a row decrements the selected counter", async ({
-      page,
-    }) => {
-      const checkbox = page
-        .locator(".alumni-row")
-        .first()
-        .getByRole("checkbox");
-      await checkbox.check();
-      await checkbox.uncheck();
-      await expect(page.locator("#selected-label")).toHaveText("0");
-    });
-
-    test("header checkbox selects all rows and updates the counter", async ({
+    test("header checkbox selects/unselects all rows and updates the counter", async ({
       page,
     }) => {
       await page.locator(".header-checkbox").check();
@@ -284,13 +280,9 @@ test.describe("Records Page", () => {
         await expect(checkboxes.nth(i)).toBeChecked();
       }
       await expect(page.locator("#selected-label")).toHaveText("3");
-    });
 
-    test("unchecking header checkbox deselects all rows", async ({ page }) => {
       await page.locator(".header-checkbox").check();
       await page.locator(".header-checkbox").uncheck();
-      const checkboxes = page.locator(".alumni-row input[type='checkbox']");
-      const count = await checkboxes.count();
       for (let i = 0; i < count; i++) {
         await expect(checkboxes.nth(i)).not.toBeChecked();
       }
