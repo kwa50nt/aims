@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Alumni Management System</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="records.css">
+  <link rel="stylesheet" href="add-records.css">
+</head>
+
+<body>
+  <header>
+    <img id="upse-logo" src="assets/upse-logo.png" alt="UPSE logo">
+    <h1>Alumni Information Management System</h1>
+    <div class="user-controls">
+        <button class="profile-btn" onclick="toggleAdminPanel()">
+            <i class="fas fa-user"></i>
+        </button>
+        <div class="logout">
+            <p>admin.up.edu.ph</p>
+            <img src="assets/logout.png" alt="Logout icon">
+        </div>
+    </div>
+  </header>
+
+  <div id="admin-panel" class="admin-panel">
+    <h3>Admin Accounts</h3>
+    <div class="admin-item">
+        <i class="fas fa-user-circle"></i>
+        admin.up.edu.ph
+    </div>
+    <div class="admin-item">
+        <i class="fas fa-user-circle"></i>
+        registrar.up.edu.ph
+    </div>
+    <div class="admin-item">
+        <i class="fas fa-user-circle"></i>
+        alumni.office.up.edu.ph
+    </div>
+  </div>
+
+  <div class="nav-container">
+    <nav>
+        <a href="index.html" class="active-nav">Records</a>
+        <a href="#">Email Blast</a>
+        <a href="add-records.html">Add Records</a>
+        <a href="#">Alumni News</a>
+    </nav>
+
+    <button class="add-btn" onclick="addAlumni()">
+        <i class="fas fa-plus"></i> Add Alumni
+    </button>
+  </div>
+
+  <div class="main-container">
+    <!-- FORM SECTION -->
+    <section class="form-section" id="view-add">
+      <form class="alumni-form">
+        <div class="form-grid">
+          <div>
+            <label>First Name</label>
+            <input type="text" placeholder="First Name">
+          </div>
+
+          <div>
+            <label>Last Name</label>
+            <input type="text" placeholder="Last Name">
+          </div>
+
+          <div>
+            <label>Middle Initial</label>
+            <input type="text" placeholder="M.I.">
+          </div>
+
+          <div>
+            <label>Suffix (If Any)</label>
+            <input type="text" placeholder="Jr., III, etc.">
+          </div>
+
+          <div>
+            <label>Maiden Name</label>
+            <input type="text" placeholder="Maiden Name">
+          </div>
+
+          <div>
+            <label>Sex Assigned at Birth</label>
+            <input type="text" placeholder="Male/Female">
+          </div>
+
+          <div>
+            <label>Email Address (Primary)</label>
+            <input type="email" placeholder="jdelacruz@up.edu.ph">
+          </div>
+
+          <div>
+            <label>Mobile Number (Primary)</label>
+            <input type="text" placeholder="e.g. 09XXXXXXXXX">
+          </div>
+
+          <div>
+            <label>Home Address (Primary)</label>
+            <input type="text" placeholder="Your Home Address">
+          </div>
+
+          <div>
+            <label>Student-Number</label>
+            <input type="text" placeholder="xxxx-xxxxx">
+          </div>
+
+          <div>
+            <label>Entry Date</label>
+            <input type="text" placeholder="MM/YYYY">
+            <small class="input-hint">*When you entered UP Diliman</small>
+          </div>
+        </div>
+
+        <div class="section-title">
+          Active Organizations
+          <button type="button" class="circle-btn" onclick="addOrganization()">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+
+        <div id="organization-container">
+          <div class="organization-row">
+            <div>
+              <label>Organization</label>
+              <input type="text" placeholder="First Active Organization">
+            </div>
+
+            <button type="button" class="circle-btn minus" onclick="removeRow(this)">
+              <i class="fas fa-minus"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="section-title">
+        Employment History
+        <button type="button" class="circle-btn" onclick="addEmployment()">
+            <i class="fas fa-plus"></i>
+        </button>
+        </div>
+
+        <div id="employment-container">
+        <div class="employment-row">
+            <div>
+            <label>Employer</label>
+            <input type="text" placeholder="e.g. Google, Inc.">
+            </div>
+
+            <div>
+            <label>Last Position Held</label>
+            <input type="text" placeholder="e.g. Head Software Engineer">
+            </div>
+
+            <div>
+            <label>Start of Employment</label>
+            <input type="text" placeholder="MM/YYYY">
+            </div>
+
+            <div>
+            <label>End</label>
+            <input type="text" placeholder="MM/YYYY">
+            </div>
+
+            <button type="button" class="circle-btn minus" onclick="removeRow(this)">
+            <i class="fas fa-minus"></i>
+            </button>
+        </div>
+        </div>
+
+        <div class="section-title">
+        Academic History
+        <button type="button" class="circle-btn" onclick="addGraduate()">
+            <i class="fas fa-plus"></i>
+        </button>
+        </div>
+
+        <div id="graduate-container">
+          <div class="graduate-row">
+            <div>
+              <label>Degree</label>
+              <input type="text" placeholder="Degree">
+            </div>
+
+            <div>
+              <label>University Studied</label>
+              <input type="text" placeholder="e.g. University of the Philippines">
+            </div>
+
+            <div>
+              <label>Graduation Year</label>
+              <input type="text" placeholder="MM/YYYY">
+            </div>
+            
+            <div>
+              <label>Year and Semester Started</label>
+              <input type="text" placeholder="2nd Sem, 2026">
+            </div>
+
+            <div>
+              <label>Semester Graduated</label>
+              <select required>
+                <option value="" disabled selected hidden>1st, 2nd</option>
+                <option value="1st">1st</option>
+                <option value="2nd">2nd</option>
+              </select>
+            </div>
+
+            <button type="button" class="circle-btn minus" onclick="removeRow(this)">
+              <i class="fas fa-minus"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="achievements-container">
+          <div class="achievements-row">
+            <label>Other Academic Achievements</label>
+            <input type="text" placeholder="e.g. Best Thesis Awardee, Dean’s Lister, etc.">
+          </div>
+          <br>
+          <div class="achievements-row">
+            <label>Latin Honors</label>
+            <select class="latin-honors" required>
+              <option value="" disabled selected hidden>Latin Honors Achieved</option>
+              <option value="N/A">N/A</option>
+              <option value="Cum Laude">Cum Laude</option>
+              <option value="Magna Cum Laude">Magna Cum Laude</option>
+              <option value="Summa Cum Laude">Summa Cum Laude</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </section>
+  </div>
+<script src="script.js"></script>
+</body>
+</html>

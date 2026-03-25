@@ -445,7 +445,7 @@ function renderAlumniRow(alumni) {
     <div class="work-cell">${workCellHTML}</div>
     <div class="grad-cell">${gradHTML}</div>
     <div class="action-cell">
-      <img src="assets/edit.png" alt="Edit" onclick="editAlumni('${alumni.alumni_id}')">
+      <a href="edit-records.html"><img src="assets/edit.png" alt="Edit"></a>
       <img src="assets/trash.png" alt="Delete" onclick="deleteAlumni('${alumni.alumni_id}')">
     </div>
   `;
