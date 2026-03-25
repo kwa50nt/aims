@@ -36,22 +36,47 @@ export default defineConfig({
   projects: [
     {
       name: 'frontend-chromium',
+      testMatch: [
+      /add-records\.spec\.ts/,
+      /login-forms\.spec\.ts/,
+      /records\.spec\.ts/,
+      /register-forms\.spec\.ts/
+      ],
       use: { ...devices['Desktop Chrome'] },
+      workers: 8
     },
 
     {
       name: 'frontend-firefox',
+      testMatch: [
+      /add-records\.spec\.ts/,
+      /login-forms\.spec\.ts/,
+      /records\.spec\.ts/,
+      /register-forms\.spec\.ts/
+      ],
       use: { ...devices['Desktop Firefox'] },
+      workers: 8
     },
 
     {
       name: 'frontend-webkit',
+      testMatch: [
+      /add-records\.spec\.ts/,
+      /login-forms\.spec\.ts/,
+      /records\.spec\.ts/,
+      /register-forms\.spec\.ts/
+      ],
       use: { ...devices['Desktop Safari'] },
+      workers: 8
     },
-    // {
-    //   name: 'backend',
-    //   use: {},                           
-    // },
+    {
+      name: 'backend',
+      testMatch: [
+      /recordsWithBackend\.spec\.ts/,
+      ],
+      use: { ...devices['Desktop Chrome'] },
+      workers: 1                       
+    },
     /* Test against mobile viewports. */
     // {
     //   name: 'Mobile Chrome',
