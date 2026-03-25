@@ -50,7 +50,7 @@ app.post("/add-alumni", async (req, res) => {
     current_email,
     phone_number,
     current_address,
-    graduationInfo,
+    academicHistory,
     employmentHist,
     alumniDegs,
     activeOrgs
@@ -118,11 +118,11 @@ app.post("/add-alumni", async (req, res) => {
     );
     const alumni_id = alumniResult.rows[0].alumni_id;
     console.log(alumniResult.rows[0]);
-    let gradInfoEntry;
-    for (i = 0 ; i < graduationInfo.length; i++){
-      gradInfoEntry = graduationInfo[i];
+    let acadHistoryEntry;
+    for (i = 0 ; i < academicHistory.length; i++){
+      acadHistoryEntry = academicHistory[i];
       await client.query(
-        `INSERT INTO graduationinfo
+        `INSERT INTO academicHistory
         (
           alumni_id, 
           year_started, 
@@ -136,11 +136,11 @@ app.post("/add-alumni", async (req, res) => {
         RETURNING *`,
         [
           alumni_id, 
-          gradInfoEntry.year_started, 
-          gradInfoEntry.semester_started, 
-          gradInfoEntry.year_graduated, 
-          gradInfoEntry.semester_graduated, 
-          gradInfoEntry.latin_honor
+          acadHistoryEntry.year_started, 
+          acadHistoryEntry.semester_started, 
+          acadHistoryEntry.year_graduated, 
+          acadHistoryEntry.semester_graduated, 
+          acadHistoryEntry.latin_honor
         ]
       );
     }
@@ -267,32 +267,27 @@ app.get("/get-alumnis", async (req, res) => {
 
     console.log("done",SQLQuery);
     const alumnis = await client.query(SQLQuery);
-    const graduationInfo = await client.query("SELECT * FROM graduationinfo");
+    const academicHistory = await client.query("SELECT * FROM academichistory");
     const employmentHistory = await client.query("SELECT * FROM employmenthistory");
-    const alumniDegrees = await client.query("SELECT * FROM alumnidegrees");
     const activeOrganizations = await client.query("SELECT * FROM activeorganizations");
     console.log(alumnis);
     const alumniDict = Object.fromEntries(
       alumnis.rows.map((row, index) => [
-        index,
+        row.alumni_id,
         {
           ...row,
-          graduationInfo: [],
+          academicHist: [],
           employmentHist: [],
-          alumniDegs: [],
           activeOrgs: []
         }
       ])
     );
 
-    graduationInfo.rows.forEach(r => {
-      if (alumniDict[r.alumni_id]) alumniDict[r.alumni_id].graduationInfo.push(r);
+    academicHistory.rows.forEach(r => {
+      if (alumniDict[r.alumni_id]) alumniDict[r.alumni_id].academicHist.push(r);
     });
     employmentHistory.rows.forEach(r => {
       if (alumniDict[r.alumni_id]) alumniDict[r.alumni_id].employmentHist.push(r);
-    });
-    alumniDegrees.rows.forEach(r => {
-      if (alumniDict[r.alumni_id]) alumniDict[r.alumni_id].alumniDegs.push(r.degree_name);
     });
     activeOrganizations.rows.forEach(r => {
       if (alumniDict[r.alumni_id]) alumniDict[r.alumni_id].activeOrgs.push(r.organization_name);

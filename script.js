@@ -109,21 +109,21 @@ function removeRow(button) {
 async function addAlumni() {
   const form = document.querySelector(".alumni-form");
 
-  const userEmail = form.querySelector('input[placeholder="Your Email"]').value;
+  const userEmail = form.querySelector('input[placeholder="jdelacruz@up.edu.ph"]').value;
 
   // Generate unique account email (for testing duplicate constraint)
   const randomSuffix = Math.floor(Math.random() * 100000);
   const accountEmail = `test+${randomSuffix}@example.com`;
 
-  const graduationInfo = Array.from(
+  const academicHist = Array.from(
   document.querySelectorAll("#graduate-container .graduate-row")
 )
   .map(row => {
     const degree = row.querySelector('input[placeholder="Degree"]').value.trim();
-    const latinHonor = row.querySelector('input[placeholder="Latin Honor"]').value.trim();
-
+    // const latinHonor = row.querySelector('input[placeholder="Latin Honor"]').value.trim();
+    const latinHonor = null;
     const gradYearInput = row.querySelector('input[placeholder="MM/YYYY"]').value.trim();
-    const yearStartedInput = row.querySelector('input[placeholder="YYYY"]').value.trim();
+    const yearStartedInput = row.querySelector('input[placeholder="2nd Sem, 2026"]').value.trim();
 
     const year_graduated =
       gradYearInput && gradYearInput.includes("/")
@@ -131,12 +131,12 @@ async function addAlumni() {
         : null;
 
     const year_started =
-      parseInt(yearStartedInput) ? parseInt(yearStartedInput) > 999 ? parseInt(yearStartedInput) :"wrong" :null;
+      parseInt(yearStartedInput.split[1]) ? parseInt(yearStartedInput.split[1]) > 999 ? parseInt(yearStartedInput.split[1]) :"wrong" :null;
     const selects = row.querySelectorAll("select");
 
     const semester_started =
-      selects[0]?.value === "1st" ? 1 :
-      selects[0]?.value === "2nd" ? 2 :
+      yearStartedInput.split[0] === "1st Sem" ? 1 :
+      yearStartedInput.split[0] === "2nd Sem" ? 2 :
       null;
 
     const semester_graduated =
@@ -194,9 +194,7 @@ async function addAlumni() {
       };
     })
     .filter(Boolean);
-  const alumniDegs = graduationInfo.map(g => ({
-    degree_name: g.degree_name
-  }));
+  
 
   const activeOrgsInput =
     form.querySelector('input[placeholder="Org1, org2, org3"]').value;
@@ -210,17 +208,18 @@ async function addAlumni() {
   const data = {
     email: accountEmail,
     password: "123456",
-    last_name: form.querySelector('input[placeholder="Your Full Name"]').value.split(' ')[1] || null,
-    first_name: form.querySelector('input[placeholder="Your Full Name"]').value.split(' ')[0] || null,
-    middle_name: "",
-    suffix: "",
+    last_name: form.querySelector('input[placeholder="Last Name"]').value || null,
+    first_name: form.querySelector('input[placeholder="First Name"]').value || null,
+    middle_name: form.querySelector('input[placeholder="M.I."]').value || null,
+    suffix: form.querySelector('input[placeholder="Jr., III, etc."]').value || null,
+    maiden_name: form.querySelector('input[placeholder="Maiden Name"]').value || null,
     gender: form.querySelector('input[placeholder="Gender"]').value,
     student_number: form.querySelector('input[placeholder="xxxx-xxxxx"]').value ? form.querySelector('input[placeholder="xxxx-xxxxx"]').value:null,
     entry_date: form.querySelector('input[placeholder="DD/MM/YYYY"]').value ? form.querySelector('input[placeholder="DD/MM/YYYY"]').value : null,
     current_email: userEmail ? userEmail : null,
     phone_number: form.querySelector('input[placeholder="Your Number"]').value ? form.querySelector('input[placeholder="Your Number"]').value : null,
     current_address: form.querySelector('input[placeholder="Your Home Address"]').value ? form.querySelector('input[placeholder="Your Home Address"]').value : null,
-    graduationInfo,
+    academicHist,
     employmentHist,
     alumniDegs,
     activeOrgs
@@ -406,11 +405,10 @@ function renderAlumniRow(alumni) {
     : `<div class="emp-entries">${empHTML}</div>`;
 
   // Graduation info
-  const gradInfos = alumni.graduationInfo || [];
-  const degrees = alumni.alumniDegs || [];
+  const gradInfos = alumni.academicHist || [];
 
   const gradHTML = gradInfos.map((g, i) => {
-    const degree = degrees[i] ? (typeof degrees[i] === "object" ? degrees[i].degree_name : degrees[i]) : null;
+    const degree = g.degree_name ? (typeof g.degree_name === "object" ? g.degree_name : g.degree_name) : null;
     const honor = g.latin_honor;
     const gradYear = g.year_graduated
       ? `${g.semester_graduated === 1 ? "01" : "06"}/${g.year_graduated}`
