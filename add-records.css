@@ -35,8 +35,30 @@ body {
   margin: 0 2vh;
 }
 
-.nav-container .add-btn {
+#edit-save-cancel {
   margin-left: auto;
+  display: flex;
+}
+
+#edit-save-cancel .cancel-btn,
+#edit-save-cancel .add-btn {
+  margin: 0 0.5vw;
+}
+
+.cancel-btn {
+  background-color: #fff;
+  color: #02451C;
+  padding: 1.2vh 1.5vw;
+  border-radius: 2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5vw;
+  font-family: 'Inter', Arial, Calibri, sans-serif;
+}
+
+.add-btn:hover {
+  opacity: 0.9;
 }
 
 .add-btn {
