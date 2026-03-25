@@ -292,10 +292,28 @@ alumniId = "50"; // will work kahit wala sa databse
   }
 }
 
-async function getAlumnis(sortBy = "none", order= "none"){
+let sortOrder = {
+  "last_name" : "asc",
+  "gender" : "asc",
+  "student_number" : "asc",
+  "entry_date" : "asc"
+}
+async function getAlumnis(sortBy = "none"){
   try {
     // frontend: comment out the fetching and result of fetching para di mag error sainyo
     // fetching the server
+    const alternateOrder = {
+      "asc":"desc",
+      "desc":"asc",
+    }
+    let order = "none"
+
+    if (sortBy != "none"){
+      order = sortOrder[sortBy];
+      sortOrder[sortBy] = alternateOrder[sortOrder[sortBy]];
+    }
+
+    else{}
     const response = await fetch(`http://localhost:${portNumberBackEnd}/get-alumnis?sortBy=${sortBy}&order=${order}`, {
       method: "GET",
       headers: {

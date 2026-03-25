@@ -50,9 +50,8 @@ app.post("/add-alumni", async (req, res) => {
     current_email,
     phone_number,
     current_address,
-    academicHistory,
+    academicHist,
     employmentHist,
-    alumniDegs,
     activeOrgs
   } = req.body;
 
@@ -77,13 +76,13 @@ app.post("/add-alumni", async (req, res) => {
     } else {
       role_id = roleResult.rows[0].role_id;
     }
-    console.log("Inserting webaccount:", email, password, role_id);
-    const accountResult = await client.query(
-      `INSERT INTO webaccount (email, password, role_id)
-       VALUES ($1, $2, $3)
-       RETURNING account_id`,
-      [email, password, role_id]
-    );
+    // console.log("Inserting webaccount:", email, password, role_id);
+    // const accountResult = await client.query(
+    //   `INSERT INTO webaccount (email, password, role_id)
+    //    VALUES ($1, $2, $3)
+    //    RETURNING account_id`,
+    //   [email, password, role_id]
+    // );
 
     // const account_id = accountResult.rows[0].account_id;
 
@@ -119,28 +118,32 @@ app.post("/add-alumni", async (req, res) => {
     const alumni_id = alumniResult.rows[0].alumni_id;
     console.log(alumniResult.rows[0]);
     let acadHistoryEntry;
-    for (i = 0 ; i < academicHistory.length; i++){
-      acadHistoryEntry = academicHistory[i];
+    for (i = 0 ; i < academicHist.length; i++){
+      acadHistoryEntry = academicHist[i];
       await client.query(
         `INSERT INTO academicHistory
         (
           alumni_id, 
+          degree_name,
           year_started, 
           semester_started, 
           year_graduated, 
           semester_graduated, 
-          latin_honor
+          latin_honor,
+          granting_university
           )
 
-        VALUES ($1,$2,$3,$4,$5,$6)
+        VALUES ($1,$2,$3,$4,$5,$6, $7, $8)
         RETURNING *`,
         [
           alumni_id, 
+          acadHistoryEntry.degree_name, 
           acadHistoryEntry.year_started, 
           acadHistoryEntry.semester_started, 
           acadHistoryEntry.year_graduated, 
           acadHistoryEntry.semester_graduated, 
-          acadHistoryEntry.latin_honor
+          acadHistoryEntry.latin_honor,
+          acadHistoryEntry.granting_university
         ]
       );
     }
@@ -168,25 +171,6 @@ app.post("/add-alumni", async (req, res) => {
           employmentHistEntry.start_date, 
           employmentHistEntry.end_date, 
           employmentHistEntry.is_current
-        ]
-      );
-    }
-
-    let alumnidegreeEntry;
-    for (i = 0 ; i < alumniDegs.length; i++){
-      alumnidegreeEntry = alumniDegs[i];
-      await client.query(
-        `INSERT INTO alumnidegrees
-        (
-          alumni_id, 
-          degree_name
-          )
-
-        VALUES ($1,$2)
-        RETURNING *`,
-        [
-          alumni_id, 
-          alumnidegreeEntry.degree_name
         ]
       );
     }
@@ -261,11 +245,10 @@ app.get("/get-alumnis", async (req, res) => {
         SQLQuery = SQLQuery + " ORDER BY " + sortBy + " " + order + ", first_name " + order;
       }
       else{
-        SQLQuery = SQLQuery + " ORDER BY " + sortBy + " " + order;
+        SQLQuery = SQLQuery + " ORDER BY " + sortBy + " " + order + ", last_name " + order + ", first_name " + order;
       }
     }
 
-    console.log("done",SQLQuery);
     const alumnis = await client.query(SQLQuery);
     const academicHistory = await client.query("SELECT * FROM academichistory");
     const employmentHistory = await client.query("SELECT * FROM employmenthistory");
@@ -278,7 +261,8 @@ app.get("/get-alumnis", async (req, res) => {
           ...row,
           academicHist: [],
           employmentHist: [],
-          activeOrgs: []
+          activeOrgs: [],
+          order: index
         }
       ])
     );
@@ -293,8 +277,13 @@ app.get("/get-alumnis", async (req, res) => {
       if (alumniDict[r.alumni_id]) alumniDict[r.alumni_id].activeOrgs.push(r.organization_name);
     });
 
+    const orderedAlumniDict = Object.fromEntries(
+      alumnis.rows.map((row, index) => [
+        index,alumniDict[row.alumni_id]
+      ])
+    );
     // send as JSON
-    res.json(alumniDict);
+    res.json(orderedAlumniDict);
 
   } catch (err) {
     res.status(500).json({ error: err.message });
