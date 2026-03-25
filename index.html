@@ -72,10 +72,10 @@
     <main>
         <div class="alumni-header">
             <input class="header-checkbox" type="checkbox">
-            <p onclick="getAlumnis('last_name', 'asc')">Name</p>
-            <p onclick="getAlumnis('gender', 'asc')">Sex</p>
-            <p onclick="getAlumnis('student_number', 'asc')">Student No.</p>
-            <p onclick="getAlumnis('entry_date', 'asc')">Entry Date</p>
+            <p data-testid = "sortLastName" onclick="getAlumnis('last_name')">Name</p>
+            <p data-testid = "sortGender" onclick="getAlumnis('gender')">Sex</p>
+            <p data-testid = "sortStudent_number" onclick="getAlumnis('student_number')">Student No.</p>
+            <p data-testid = "sortEntry_date" onclick="getAlumnis('entry_date')">Entry Date</p>
             <p>Active Organizations</p>
             <p>Employment History</p>
             <p>Graduate Info</p>
