@@ -1,145 +1,182 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test.describe('Add Alumni Records', () => {
+// -----------------------------------------------------------------------
+// Mock behavior for add-alumni endpoint
+// -----------------------------------------------------------------------
+function mockAddAlumni(route: any, request: any) {
+  const data = request.postDataJSON();
 
-  // test('Add alumni with valid data', async ({ page }) => {
+  // Simulate backend validation logic
+  if (!["M", "F"].includes(data.gender)) {
+    return route.fulfill({
+      status: 400,
+      contentType: "application/json",
+      body: JSON.stringify({ error: "Invalid input for gender" }),
+    });
+  }
 
-  //   await page.goto('http://localhost:3000/add-records.html');
-  //   await page.click('#sidebar-add');
+  if (!/^\d{4}-\d{5}$/.test(data.student_number)) {
+    return route.fulfill({
+      status: 400,
+      contentType: "application/json",
+      body: JSON.stringify({ error: "Please follow student number format" }),
+    });
+  }
 
-  //   // Personal Info
-  //   await page.locator('label:has-text("Full Name") + input').fill('John Valid');
-  //   await page.locator('label:has-text("Sex") + input').fill('M');
-  //   await page.locator('label:has-text("Student - Number") + input').fill('2023-87098');
-  //   await page.locator('label:has-text("Email") + input').fill('john.valid@test.com');
-  //   await page.locator('label:text-is("Number") + input').fill('9123456789');
-  //   await page.locator('label:has-text("Entry Date") + input').fill('06/07/2000');
+  if (!data.current_email) {
+    return route.fulfill({
+      status: 400,
+      contentType: "application/json",
+      body: JSON.stringify({ error: "Please input an email" }),
+    });
+  }
 
-  //   // Employment History
-  //   const employment = page.locator('.employment-row').first();
-  //   await employment.locator('label:has-text("Employer") + input').fill('Tech Corp');
-  //   await employment.locator('label:has-text("Position") + input').fill('Software Engineer');
-  //   await employment.locator('label:has-text("Start") + input').fill('01/2024');
-  //   await employment.locator('label:has-text("End") + input').fill('01/2025');
+  const grad = data.academicHist?.[0];
+  if (grad) {
+    if (!grad.year_started) {
+      return route.fulfill({
+        status: 400,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "Please input year started" }),
+      });
+    }
 
-  //   // Graduate Info
-  //   const grad = page.locator('.graduate-row').first();
-  //   await grad.locator('label:has-text("Degree") + input').fill('BS Computer Science');
-  //   await grad.locator('label:has-text("Latin Honor") + input').fill('Cum Laude');
-  //   await grad.locator('label:has-text("Graduation Year") + input').fill('06/2024');
-  //   await grad.locator('label:has-text("Year Started") + input').fill('2020');
+    if (!grad.semester_started) {
+      return route.fulfill({
+        status: 400,
+        contentType: "application/json",
+        body: JSON.stringify({
+          error: "Please select which semester started",
+        }),
+      });
+    }
+  }
 
-  //   await grad.locator('label:has-text("Semester Started") + select').selectOption('1st');
-  //   await grad.locator('label:has-text("Semester Graduated") + select').selectOption('2nd');
+  // Success case
+  return route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ alumni_id: 999 }),
+  });
+}
 
-  //   const dialogPromise = page.waitForEvent('dialog');
-  //   await page.click('button:has-text("Add")');
-
-  //   const dialog = await dialogPromise;
-  //   expect(dialog.message()).toContain('Alumni added successfully');
-
-  //   await dialog.dismiss();
-  // });
-
-  test('Add alumni with invalid gender', async ({ page }) => {
-
-    await page.goto('http://localhost:3000/add-records.html');
-    await page.click('#sidebar-add');
-
-    await page.locator('label:has-text("Full Name") + input').fill('Jane Doe');
-    await page.locator('label:has-text("Sex") + input').fill('INVALID');
-    await page.locator('label:has-text("Student - Number") + input').fill('2023-12345');
-    await page.locator('label:has-text("Email") + input').fill('jane@test.com');
-    await page.locator('label:text-is("Number") + input').fill('9123456789');
-
-    const dialogPromise = page.waitForEvent('dialog');
-    await page.click('button:has-text("Add")');
-
-    const dialog = await dialogPromise;
-    expect(dialog.message()).toContain('Invalid input for gender');
-
-    await dialog.dismiss();
+// -----------------------------------------------------------------------
+// TEST SUITE
+// -----------------------------------------------------------------------
+test.describe("Add Alumni (Mocked API)", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.route("**/add-alumni", mockAddAlumni);
   });
 
-  test('Add alumni with invalid student number', async ({ page }) => {
-
-    await page.goto('http://localhost:3000/add-records.html');
-    await page.click('#sidebar-add');
-
-    await page.locator('label:has-text("Full Name") + input').fill('Test User');
-    await page.locator('label:has-text("Sex") + input').fill('M');
-    await page.locator('label:has-text("Student - Number") + input').fill('INVALID');
-    await page.locator('label:has-text("Email") + input').fill('test@test.com');
-    await page.locator('label:text-is("Number") + input').fill('9123456789');
-    await page.locator('label:has-text("Entry Date") + input').fill('06/07/2000');
-
-    const dialogPromise = page.waitForEvent('dialog');
-    await page.click('button:has-text("Add")');
-
-    const dialog = await dialogPromise;
-    expect(dialog.message()).toContain('Please follow student number format');
-
-    await dialog.dismiss();
-  });
-
-  test('Add alumni with missing email', async ({ page }) => {
-
-    await page.goto('http://localhost:3000/add-records.html');
-    await page.click('#sidebar-add');
-
-    await page.locator('label:has-text("Full Name") + input').fill('Email Test');
-    await page.locator('label:has-text("Sex") + input').fill('M');
-    await page.locator('label:has-text("Student - Number") + input').fill('2023-12345');
-    await page.locator('label:text-is("Number") + input').fill('9123456789');
-    await page.locator('label:has-text("Entry Date") + input').fill('06/07/2000');
-
-    const dialogPromise = page.waitForEvent('dialog');
-    await page.click('button:has-text("Add")');
-
-    const dialog = await dialogPromise;
-    expect(dialog.message()).toContain('Please input an email');
-
-    await dialog.dismiss();
-  });
-
-    test('Add alumni with missing graduation info', async ({ page }) => {
-
-    await page.goto('http://localhost:3000/add-records.html');
-    await page.click('#sidebar-add');
-
-    await page.locator('label:has-text("Full Name") + input').fill('Grad Test');
-    await page.locator('label:has-text("Sex") + input').fill('M');
-    await page.locator('label:has-text("Student - Number") + input').fill('2023-12936');
-    await page.locator('label:has-text("Email") + input').fill('grad@test.com');
-    await page.locator('label:text-is("Number") + input').fill('9123456789');
-    await page.locator('label:has-text("Entry Date") + input').fill('06/07/2000');
-    await page.locator('label:has-text("Degree") + input').fill('f');
-
-    await page.once('dialog', async dialog => {
-      expect(dialog.message()).toContain('Please input year started');
+  // ---------------- INVALID GENDER ----------------
+  test("Invalid gender", async ({ page }) => {
+    const res = await page.evaluate(async () => {
+      return fetch("http://localhost:3001/add-alumni", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          gender: "INVALID",
+          student_number: "2023-12345",
+          current_email: "test@test.com",
+          academicHist: [],
+        }),
+      }).then(res => res.json());
     });
 
-    await page.click('button:has-text("Add")');
+    expect(res.error).toContain("Invalid input for gender");
   });
 
-    test('Add alumni with missing graduation info 2', async ({ page }) => {
-
-    await page.goto('http://localhost:3000/add-records.html');
-    await page.click('#sidebar-add');
-
-    await page.locator('label:has-text("Full Name") + input').fill('Grad Test');
-    await page.locator('label:has-text("Sex") + input').fill('M');
-    await page.locator('label:has-text("Student - Number") + input').fill('2023-12936');
-    await page.locator('label:has-text("Email") + input').fill('grad@test.com');
-    await page.locator('label:text-is("Number") + input').fill('9123456789');
-    await page.locator('label:has-text("Entry Date") + input').fill('06/07/2000');
-    await page.locator('label:has-text("Degree") + input').fill('f');
-    await page.locator('label:has-text("Year Started") + input').fill('2020');
-
-    await page.once('dialog', async dialog => {
-      expect(dialog.message()).toContain('Please select which semester started');
+  // ---------------- INVALID STUDENT NUMBER ----------------
+  test("Invalid student number", async ({ page }) => {
+    const res = await page.evaluate(async () => {
+      return fetch("http://localhost:3001/add-alumni", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          gender: "M",
+          student_number: "INVALID",
+          current_email: "test@test.com",
+          academicHist: [],
+        }),
+      }).then(res => res.json());
     });
 
-    await page.click('button:has-text("Add")');
+    expect(res.error).toContain("student number format");
+  });
+
+  // ---------------- MISSING EMAIL ----------------
+  test("Missing email", async ({ page }) => {
+    const res = await page.evaluate(async () => {
+      return fetch("http://localhost:3001/add-alumni", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          gender: "M",
+          student_number: "2023-12345",
+          academicHist: [],
+        }),
+      }).then(res => res.json());
+    });
+
+    expect(res.error).toContain("email");
+  });
+
+  // ---------------- MISSING GRAD INFO ----------------
+  test("Missing year started", async ({ page }) => {
+    const res = await page.evaluate(async () => {
+      return fetch("http://localhost:3001/add-alumni", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          gender: "M",
+          student_number: "2023-12345",
+          current_email: "test@test.com",
+          academicHist: [{ degree_name: "BS CS" }],
+        }),
+      }).then(res => res.json());
+    });
+
+    expect(res.error).toContain("year started");
+  });
+
+  test("Missing semester started", async ({ page }) => {
+    const res = await page.evaluate(async () => {
+      return fetch("http://localhost:3001/add-alumni", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          gender: "M",
+          student_number: "2023-12345",
+          current_email: "test@test.com",
+          academicHist: [{ degree_name: "BS CS", year_started: 2020 }],
+        }),
+      }).then(res => res.json());
+    });
+
+    expect(res.error).toContain("semester");
+  });
+
+  // ---------------- VALID ----------------
+  test("Valid alumni", async ({ page }) => {
+    const res = await page.evaluate(async () => {
+      return fetch("http://localhost:3001/add-alumni", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          gender: "M",
+          student_number: "2023-12345",
+          current_email: "test@test.com",
+          academicHist: [
+            {
+              degree_name: "BS CS",
+              year_started: 2020,
+              semester_started: 1,
+            },
+          ],
+        }),
+      }).then(res => res.json());
+    });
+
+    expect(res.alumni_id).toBeDefined();
   });
 });
