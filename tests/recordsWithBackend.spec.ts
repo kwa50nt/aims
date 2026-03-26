@@ -119,7 +119,6 @@ test.describe("Records Page Sorting function", () => {
       fetched = await response.json();
       alumni_ids.push(fetched.alumni_id);
     }
-    console.log(alumni_ids);
   });
   test.afterAll(async ({}) => {
     // removed added alumni to database
