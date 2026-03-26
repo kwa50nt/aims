@@ -23,7 +23,7 @@ function addEmployment() {
     </div>
 
     <div>
-      <label>End</label>
+      <label>End of Employment</label>
       <input type="text" placeholder="MM/YYYY">
     </div>
 
@@ -45,7 +45,19 @@ function addGraduate() {
   newRow.innerHTML = `
     <div>
       <label>Degree</label>
-      <input type="text" placeholder="Degree">
+      <input type="text" placeholder="BS Economics">
+      <small class="input-hint">*Don't abbreviate your academic program</small>
+    </div>
+
+    <div>
+      <label>Latin Honors</label>
+      <select class="latin-honors" required>
+        <option value="" disabled selected hidden>Select...</option>
+        <option value="N/A">N/A</option>
+        <option value="Cum Laude">Cum Laude</option>
+        <option value="Magna Cum Laude">Magna Cum Laude</option>
+        <option value="Summa Cum Laude">Summa Cum Laude</option>
+      </select>
     </div>
 
     <div>
@@ -54,22 +66,13 @@ function addGraduate() {
     </div>
 
     <div>
-      <label>Graduation Year</label>
-      <input type="text" placeholder="MM/YYYY">
-    </div>
-    
-    <div>
       <label>Year and Semester Started</label>
-      <input type="text" placeholder="2nd Sem, 2026">
+      <input type="text" placeholder="1st Sem, 2026">
     </div>
 
     <div>
-      <label>Semester Graduated</label>
-      <select required>
-        <option value="" disabled selected hidden>1st, 2nd</option>
-        <option value="1st">1st</option>
-        <option value="2nd">2nd</option>
-      </select>
+      <label>Year and Semester Graduated</label>
+      <input type="text" placeholder="2nd Sem, 2030">
     </div>
 
     <button type="button" class="circle-btn minus" onclick="removeRow(this)">

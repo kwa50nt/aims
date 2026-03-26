@@ -180,9 +180,9 @@ input {
 
 .graduate-row {
   display: grid;
-  grid-template-columns: 1.3fr 1.5fr 1fr 1fr 1fr auto;
+  grid-template-columns: 1.2fr 1fr 1.5fr 1.2fr 1.2fr auto; 
   gap: 15px;
-  align-items: end;
+  align-items: start; 
   margin-bottom: 15px;
 }
 
@@ -204,6 +204,13 @@ input {
   font-family: 'Inter', Arial, Calibri, sans-serif;
   font-size: 14px;
   appearance: none;
+}
+
+.graduate-row label {
+  font-size: 13px;
+  margin-bottom: 6px;
+  display: block;
+  color: #333;
 }
 
 select:invalid {
