@@ -108,8 +108,35 @@ body {
     text-decoration: underline;
 }
 
-/* the big image) */
 .login-right {
     width: 50%;
-    background-color: #ccc; /* placeholder */
+    background-color: #ccc;
+}
+
+.button-group {
+    display: flex;
+    flex-direction: row;
+    gap: 15px; 
+    align-items: center;
+}
+
+.login-box .google-btn {
+    width: auto;
+    padding: 8px 16px;
+    border: 1px solid #ccc;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.login-box .google-btn:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.google-btn img {
+    width: 18px;
+    height: 18px;
 }
