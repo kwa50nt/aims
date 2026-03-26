@@ -103,7 +103,7 @@ const mockAlumniData = {
 };
 
 
-test.describe("Records Page with backend", () => {
+test.describe("Records Page Sorting function", () => {
   let alumni_ids:number[] = [];
   test.beforeAll(async ({}) => {
     // add alumni to database
@@ -240,13 +240,55 @@ test.describe("Records Page with backend", () => {
       await page.getByTestId("sortEntry_date").click();
       await page.getByTestId("sortEntry_date").click();
 
-      const row1 = page.locator(".alumni-row").nth(0);;
+      const row1 = page.locator(".alumni-row").nth(0);
       const row2 = page.locator(".alumni-row").nth(1);
       const row3 = page.locator(".alumni-row").nth(2);
       await expect(row1.getByText("John Doe")).toBeVisible();
       await expect(row2.getByText("Jake Doe")).toBeVisible();
       await expect(row3.getByText("Jane Doe")).toBeVisible();
     });
-    
   });
+});
+
+test.describe("Records - delete alumni ", () => {
+  let alumni_id_to_delete:number;
+  test("Add an alumni for deletion", async ({
+    page,
+  }) => {
+      // add alumni
+    const response = await fetch(`http://localhost:3001/add-alumni`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(mockAlumniData[56])
+    });
+    const fetched = await response.json();
+    const alumni_id = fetched.alumni_id;
+
+    await page.goto("http://localhost:3000/index.html");
+    await page.waitForSelector(".alumni-row", { timeout: 10000 });
+
+    //verify alumni has been added
+    const row1 = page.locator(".alumni-row").nth(0);;
+    await expect(row1.getByText("John Doe")).toBeVisible();
+
+  });
+  test("Delete an alumni", async ({
+    page,
+  }) => {
+    await page.goto("http://localhost:3000/index.html");
+    await page.waitForSelector(".alumni-row", { timeout: 10000 });
+    // delete alumni
+    
+    // access trash button
+    page.on('dialog', async dialog => {
+      await dialog.accept();
+    });
+
+    const row1 = page.locator(".alumni-row").nth(0);
+    await row1.getByAltText("Delete").click();
+
+    //verify alumni has been deleted
+    await expect(page.locator(".alumni-row")).toHaveCount(0);
+    });
+
 });
