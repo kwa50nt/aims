@@ -271,10 +271,17 @@ async function addAlumni() {
   }
 }
 
-async function deleteAlumni(){
-alumniId = "50"; // will work kahit wala sa databse 
+async function deleteAlumni(alumniId) {//parameter nlng alumniId since ginagamit naman din pareho sa pag delete sa frontend at backend
+  const confirmDelete = confirm("Delete this alumni?");
+  if (!confirmDelete) return;
+
   try {
-    // fetching the server
+    //frontend delete portion
+    const row = document.querySelector(`[data-alumni-id="${alumniId}"]`);
+    if (row) row.remove();
+
+    updateSelectedCount();
+    //backend delete portion
     const response = await fetch(`http://localhost:${portNumberBackEnd}/delete-alumni/${alumniId}`, {
       method: "DELETE",
       headers: {
@@ -282,12 +289,10 @@ alumniId = "50"; // will work kahit wala sa databse
       }
     });
 
-
-    // result of fetching
     const fetched = await response.json();
     console.log("Server Response:", fetched);
-  }
-  catch (err){
+
+  } catch (err) {
     console.log("error deleting alumni:", err);
   }
 }
