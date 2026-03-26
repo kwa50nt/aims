@@ -65,7 +65,7 @@ CREATE TABLE academichistory (
   CONSTRAINT graduationinfo_ibfk_1 FOREIGN KEY (alumni_id) 
     REFERENCES upsealumni (alumni_id) ON DELETE CASCADE
 );
-CREATE INDEX alumni_id_idx ON graduationinfo(alumni_id);
+CREATE INDEX alumni_id_idx ON academichistory(alumni_id);
 
 CREATE TABLE employmenthistory (
   employment_id BIGSERIAL NOT NULL PRIMARY KEY,
@@ -73,7 +73,7 @@ CREATE TABLE employmenthistory (
   employer VARCHAR(100) NOT NULL,
   last_position_held VARCHAR(100) NOT NULL,
   start_date date NOT NULL,
-  end_date date NOT NULL,
+  end_date date,
   is_current BOOLEAN DEFAULT FALSE,
   CONSTRAINT employmenthistory_ibfk_1 FOREIGN KEY (alumni_id) 
     REFERENCES upsealumni (alumni_id) ON DELETE CASCADE

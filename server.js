@@ -306,7 +306,11 @@ app.post("/upload-excel", upload.single("file"), async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
+    const fileExtension = req.file.originalname.split(".").pop().toLowerCase();
+    const workbook = XLSX.read(req.file.buffer, { 
+      type: "buffer",
+      raw: fileExtension === "csv"  // tells xlsx to treat commas as delimiters
+    });
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
 
@@ -324,11 +328,11 @@ app.post("/upload-excel", upload.single("file"), async (req, res) => {
         suffix,
         gender,
         student_number,
-        entry_date = excelSerialToDate(row.entry_date),
         current_email,
         phone_number,
         current_address
       } = row;
+      const entry_date = excelSerialToDate(row.entry_date);
 
       // Insert into webaccount + alumni
       const roleResult = await client.query(
@@ -338,11 +342,11 @@ app.post("/upload-excel", upload.single("file"), async (req, res) => {
 
       const role_id = roleResult.rows[0]?.role_id;
 
-      await client.query(
-        `INSERT INTO webaccount (email, password, role_id)
-         VALUES ($1, $2, $3)`,
-        [email, password, role_id]
-      );
+      // await client.query(
+      //   `INSERT INTO webaccount (email, password, role_id)
+      //    VALUES ($1, $2, $3)`,
+      //   [email, password, role_id]
+      // );
 
       const alumniResult = await client.query(
         `INSERT INTO upsealumni

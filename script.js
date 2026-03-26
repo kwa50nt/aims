@@ -218,7 +218,12 @@ async function addAlumni() {
     maiden_name: form.querySelector('input[placeholder="Maiden Name"]').value || null,
     gender: form.querySelector('input[placeholder="Gender"]').value,
     student_number: form.querySelector('input[placeholder="xxxx-xxxxx"]').value ? form.querySelector('input[placeholder="xxxx-xxxxx"]').value:null,
-    entry_date: form.querySelector('input[placeholder="DD/MM/YYYY"]').value ? form.querySelector('input[placeholder="DD/MM/YYYY"]').value : null,
+    entry_date: (() => {
+      const raw = form.querySelector('input[placeholder="DD/MM/YYYY"]').value;
+      if (!raw || !raw.includes("/")) return null;
+      const [day, month, year] = raw.split("/");
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    })(),
     current_email: userEmail ? userEmail : null,
     phone_number: form.querySelector('input[placeholder="Your Number"]').value ? form.querySelector('input[placeholder="Your Number"]').value : null,
     current_address: form.querySelector('input[placeholder="Your Home Address"]').value ? form.querySelector('input[placeholder="Your Home Address"]').value : null,
@@ -576,7 +581,7 @@ async function loadSampleExcelData() {
   // Create a hidden file input
   const input = document.createElement("input");
   input.type = "file";
-  input.accept = ".xlsx,.xls";
+  input.accept = ".xlsx,.xls,.csv";
 
   input.onchange = async () => {
     const file = input.files[0];
