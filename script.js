@@ -1,4 +1,116 @@
 const portNumberBackEnd = 3001
+const blankFilters = {
+  gender: [],
+  studentNum: [],
+  entryDate: [],
+  employment:[],
+  activOrgs:[],
+  acadHist:{
+    degreeAndUniv:[],
+    dateStart:[],
+    gradDate:[]
+  }
+}
+//  type: index sa dict
+// to add sa gender type = ["gender"]
+// to add sa gradDate type = ["acadHist", "gradDate"]
+
+function dictIsEqual(f1, f2){
+  if (f1.length != f2.length){
+    return false
+  }
+  for (let elem1 in f1){
+    if ( f1[elem1] != f2[elem1]){
+      return false;
+    }
+  }
+  return true;
+}
+
+function addFilter(path, filter){
+  let filters = JSON.parse(localStorage.getItem("filters")) || blankFilters;
+  console.log(filters);
+
+  let lst = path.reduce((ret, t) => ret[t], filters)
+  if (lst == undefined){
+    console.log("wrong path value")
+    return false;
+  }
+
+  for (let elem of lst){
+    console.log(elem);
+    if (dictIsEqual(elem, filter)){
+      console.log("duplicate filter exists")
+      return false;
+    }
+  }
+  
+  // add filter
+  lst.push(filter);
+  console.log(filters);
+
+  console.log("filter added")
+  localStorage.setItem("filters", JSON.stringify(filters));
+  return true;
+}
+
+function deleteFilter(path, filter){
+  let filters = JSON.parse(localStorage.getItem("filters")) || blankFilters;
+  console.log(filters);
+  let lst = path.reduce((ret, t) => ret[t], filters)
+  if (lst == undefined){
+    console.log("wrong path value")
+    return false;
+  }
+
+  const oldLen = lst.length
+  lst = lst.filter(i => !dictIsEqual(i, filter));
+
+  
+  // no existing filter
+  if (oldLen == lst.length){
+    console.log("nothing to delete")
+    return false
+  }
+  // assign the lst
+  if ( path.length == 1){
+    filters[path[0]] = lst
+  }
+  else if (path.length == 2 ){
+    filters[path[0]][path[1]] = lst
+  }
+
+  console.log(filters);
+  localStorage.setItem("filters", JSON.stringify(filters));
+  console.log("deleted value")
+  return true
+}
+
+function filterTest(){
+  filters = {
+    gender:[
+      {
+        gender:'F',
+        flag:"exclude"
+      }
+    ],
+    studentNum:[
+      {
+        start:2020,
+        end:2025,
+        flag:"exclude"
+      }
+    ],
+    entryDate:[
+      {
+        start:'2020-2-2',
+        end:'2025-2-2',
+        flag:"exclude"
+      }
+    ]
+  }
+  getAlumnis("none", filters);
+}
 
 function addEmployment() {
   const container = document.getElementById("employment-container");
@@ -229,7 +341,6 @@ async function addAlumni() {
     current_address: form.querySelector('input[placeholder="Your Home Address"]').value ? form.querySelector('input[placeholder="Your Home Address"]').value : null,
     academicHist,
     employmentHist,
-    alumniDegs,
     activeOrgs
   };
 
@@ -311,7 +422,11 @@ let sortOrder = {
   "student_number" : "asc",
   "entry_date" : "asc"
 }
-async function getAlumnis(sortBy = "none"){
+async function getAlumnis(sortBy = "none", filters ={
+  gender:[],
+  studentNum:[],
+  entryDate:[]
+}){
   try {
     // frontend: comment out the fetching and result of fetching para di mag error sainyo
     // fetching the server
@@ -327,7 +442,7 @@ async function getAlumnis(sortBy = "none"){
     }
 
     else{}
-    const response = await fetch(`http://localhost:${portNumberBackEnd}/get-alumnis?sortBy=${sortBy}&order=${order}`, {
+    const response = await fetch(`http://localhost:${portNumberBackEnd}/get-alumnis?sortBy=${sortBy}&order=${order}&filters=${JSON.stringify(filters)}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
