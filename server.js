@@ -1,11 +1,12 @@
 const express = require("express");
 const { Pool } = require("pg");
 const cors = require("cors");
+const joinOp = " AND "
 
 const app = express();
 app.use(express.json());
 app.use(cors());
-const joinOp = " AND "
+
 function excelSerialToDate(serial) {
   if (!serial) return null;
 
@@ -379,31 +380,31 @@ app.get("/get-alumnis", async (req, res) => {
     const acadHistWhereQuery = getAcadHistWhereQuery(filter);
     console.log(`acadHist \n ${acadHistWhereQuery}`);
 
-    let alumniBase = `WITH alumni_base AS (
+    const alumniBase = `WITH alumni_base AS (
     SELECT *
     FROM upsealumni
     ${alumniWhereQuery}),
     `;
 
-    let acadHist = `acad_hist AS (
+    const acadHist = `acad_hist AS (
     SELECT *
     FROM academichistory
     ${acadHistWhereQuery}),
     `;
 
-    let empHist = `emp_hist AS (
+    const empHist = `emp_hist AS (
     SELECT *
     FROM employmenthistory
     ${employmentWhereQuery}),
     `;
 
-    let activeOrg = `active_org AS (
+    const activeOrg = `active_org AS (
     SELECT *
     FROM activeorganizations
     ${activeOrgWhereQuery})
     `;
 
-    let finalQuery = `
+    const finalQuery = `
     SELECT
         a.alumni_id,
         a.last_name,
@@ -478,104 +479,15 @@ app.get("/get-alumnis", async (req, res) => {
         a.phone_number,
         a.current_address
 
-    ${alumniOrder}
-    `;
+    ${alumniOrder}`;
 
-//     const test = await client.query(`
-//   SELECT 
-//     a.alumni_id,
-//     a.student_number,
-//     a.last_name,
-//     a.first_name,
-//     a.middle_name,
-//     a.suffix,
-//     a.gender,
-//     a.entry_date,
-//     a.current_email,
-//     a.phone_number,
-//     a.current_address,
-//     a.academic_achievements,
-
-//     -- ✅ Academic History JSON
-//     COALESCE(
-//         json_agg(
-//             DISTINCT jsonb_build_object(
-//                 'graduation_id', ah.graduation_id,
-//                 'degree_name', ah.degree_name,
-//                 'granting_university', ah.granting_university,
-//                 'year_started', ah.year_started,
-//                 'semester_started', ah.semester_started,
-//                 'year_graduated', ah.year_graduated,
-//                 'semester_graduated', ah.semester_graduated,
-//                 'latin_honor', ah.latin_honor
-//             )
-//         ) FILTER (WHERE ah.graduation_id IS NOT NULL),
-//         '[]'
-//     ) AS academic_hist,
-
-//     -- ✅ Employment History JSON
-//     COALESCE(
-//         json_agg(
-//             DISTINCT jsonb_build_object(
-//                 'employment_id', eh.employment_id,
-//                 'employer', eh.employer,
-//                 'last_position_held', eh.last_position_held,
-//                 'start_date', eh.start_date,
-//                 'end_date', eh.end_date,
-//                 'is_current', eh.is_current
-//             )
-//         ) FILTER (WHERE eh.employment_id IS NOT NULL),
-//         '[]'
-//     ) AS employment_hist,
-
-//     -- ✅ Active Organizations JSON
-//     COALESCE(
-//         json_agg(
-//             DISTINCT jsonb_build_object(
-//                 'org_id', ao.org_id,
-//                 'organization_name', ao.organization_name
-//             )
-//         ) FILTER (WHERE ao.org_id IS NOT NULL),
-//         '[]'
-//     ) AS active_orgs
-
-// FROM upsealumni a
-
-// INNER JOIN academichistory ah 
-//     ON a.alumni_id = ah.alumni_id
-//     -- AND ah.degree_name = 'BS Computer Science'
-
-// INNER JOIN employmenthistory eh 
-//     ON a.alumni_id = eh.alumni_id
-//     -- AND eh.is_current = TRUE
-
-// INNER JOIN activeorganizations ao 
-//     ON a.alumni_id = ao.alumni_id
-//     -- AND ao.organization_name = 'Women in Tech PH'
-
-// WHERE a.gender = 'F'
-// GROUP BY 
-//     a.alumni_id,
-//     a.student_number,
-//     a.last_name,
-//     a.first_name,
-//     a.middle_name,
-//     a.suffix,
-//     a.gender,
-//     a.entry_date,
-//     a.current_email,
-//     a.phone_number,
-//     a.current_address,
-//     a.academic_achievements
-	
-// ORDER BY a.last_name
-// ;`);
+    // final query
     console.log(alumniBase + acadHist + empHist + activeOrg + finalQuery)
-  const test = await client.query(alumniBase + acadHist + empHist + activeOrg + finalQuery)
-  console.log(test.rows);
+    const alumniDB = await client.query(alumniBase + acadHist + empHist + activeOrg + finalQuery)
+    console.log(alumniDB.rows);
 
     // send as JSON
-    res.json(test.rows);
+    res.json(alumniDB.rows);
 
   } catch (err) {
     res.status(500).json({ error: err.message });
