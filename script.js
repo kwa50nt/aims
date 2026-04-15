@@ -33,7 +33,6 @@ function dictIsEqual(f1, f2) {
 
 function addFilter(path, filter) {
   let filters = JSON.parse(localStorage.getItem("filters"));
-  // Use deep copy so we don't accidentally mutate the global blankFilters
   if (!filters) filters = JSON.parse(JSON.stringify(blankFilters));
 
   let lst = path.reduce((ret, t) => ret[t], filters);
@@ -247,7 +246,6 @@ async function addAlumni() {
       };
 
       const degree = getRowVal('input[placeholder="BS Economics"]') || null;
-      // Capture the university string
       const university = getRowVal('input[placeholder="e.g. University of the Philippines"]') || null;
       
       const latinHonorRaw = getRowVal(".latin-honors");
@@ -283,7 +281,7 @@ async function addAlumni() {
       return {
         degree_name: degree,
         year_started,
-        granting_university: university, // <--- FIXED: Now matches database column name
+        granting_university: university,
         semester_started,
         year_graduated,
         semester_graduated,
@@ -355,11 +353,11 @@ async function addAlumni() {
   // Format phone number for DB ("0917..." -> "917...")
   let phone = getVal('input[placeholder="e.g. 09XXXXXXXXX"]');
   if (phone) {
-    phone = phone.replace(/[-\s]/g, ""); // Remove any spaces or dashes
+    phone = phone.replace(/[-\s]/g, "");  // Remove any spaces or dashes
     if (phone.startsWith("0") && phone.length === 11) {
-      phone = phone.substring(1); // Strips the first zero
+      phone = phone.substring(1);  // Strips the first zero
     } else if (phone.startsWith("+63")) {
-      phone = phone.substring(3); // Strips the +63 if used
+      phone = phone.substring(3);  // Strips the +63 if used
     }
   }
 
@@ -491,7 +489,6 @@ async function getAlumnis(sortBy = "none", filters = null){
       sortOrder[sortBy] = alternateOrder[sortOrder[sortBy]];
     }
 
-    // Safely encode the JSON so { } [ ] " characters don't break the backend URL parser
     const encodedFilters = encodeURIComponent(JSON.stringify(filters));
 
     const response = await fetch(`http://localhost:${portNumberBackEnd}/get-alumnis?sortBy=${sortBy}&order=${order}&filters=${encodedFilters}`, {
@@ -551,7 +548,6 @@ function renderAlumniTable(alumniData) {
   const main = document.getElementById("alumni-table-body");
   main.innerHTML = "";
 
-  // alumniData is in extracted from JSON format
   const entries = Object.values(alumniData);
 
   if (entries.length == 0) {
@@ -565,7 +561,6 @@ function renderAlumniTable(alumniData) {
 }
 
 function renderAlumniRow(alumni) {
-  // Name
   const fullName = [
     alumni.first_name,
     alumni.middle_name,
@@ -575,7 +570,6 @@ function renderAlumniRow(alumni) {
     .filter(Boolean)
     .join(" ");
 
-  // Organizations
   const orgsHTML =
     (alumni.activeOrgs || [])
       .map((org) => {
@@ -588,7 +582,6 @@ function renderAlumniRow(alumni) {
       })
       .join("") || "<p>—</p>";
 
-  // Employment
   const employments = alumni.employmentHist || [];
   const sorted = [...employments].sort((a, b) => b.is_current - a.is_current);
   const empHTML =
@@ -618,7 +611,6 @@ function renderAlumniRow(alumni) {
        <div class="emp-entries collapsed">${empHTML}</div>`
       : `<div class="emp-entries">${empHTML}</div>`;
 
-  // Graduation info
   const gradInfos = alumni.academicHist || [];
 
   const gradHTML =
@@ -642,11 +634,10 @@ function renderAlumniRow(alumni) {
       })
       .join("") || "<p>—</p>";
 
-  // Row element
   const row = document.createElement("div");
   row.className = "alumni-row";
   row.dataset.alumniId = alumni.alumni_id;
-  // store email to make exporting easier
+
   row.dataset.email = alumni.current_email || "";
 
   row.innerHTML = `
@@ -809,7 +800,6 @@ async function loadSampleExcelData() {
         return;
       }
 
-      // OPTIONAL: render preview if backend returns data
       const rows = result.data || [];
 
       body.innerHTML = rows
@@ -943,7 +933,7 @@ function applyFilter(type) {
 
   renderActiveFilters();
   closeFilterMenu();
-  getAlumnis(); // Now automatically retrieves updated filters
+  getAlumnis();
 }
 
 function renderActiveFilters() {
