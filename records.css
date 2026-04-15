@@ -303,7 +303,7 @@ main > div:first-child {
 
 /* Filter drop down */
 .filter-dropdown-wrapper {
-    position: relative;
+    position: relative; 
     cursor: pointer;
 }
 
