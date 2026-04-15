@@ -6,7 +6,7 @@ const blankFilters = {
   employment: [],
   activOrgs: [],
   acadHist: {
-    degreeUniv: [],
+    degreeAndUniv: [],
     dateStart: [],
     gradDate: [],
   },
@@ -236,7 +236,7 @@ async function addAlumni() {
   const randomSuffix = Math.floor(Math.random() * 100000);
   const accountEmail = `test+${randomSuffix}@example.com`;
 
-  const academicHist = Array.from(
+  const academic_hist = Array.from(
     document.querySelectorAll("#graduate-container .graduate-row"),
   )
     .map((row) => {
@@ -290,7 +290,7 @@ async function addAlumni() {
     })
     .filter(Boolean);
 
-  const employmentHist = Array.from(
+  const employment_hist = Array.from(
     document.querySelectorAll("#employment-container .employment-row"),
   )
     .map((row) => {
@@ -325,13 +325,13 @@ async function addAlumni() {
     })
     .filter(Boolean);
 
-  const activeOrgs = [];
+  const active_orgs = [];
   document.querySelectorAll('#organization-container input[placeholder="Organization"]').forEach(input => {
     const val = input.value.trim();
     if (val) {
       val.split(",").forEach(org => {
         const cleanOrg = org.trim();
-        if (cleanOrg) activeOrgs.push({ organization_name: cleanOrg });
+        if (cleanOrg) active_orgs.push({ organization_name: cleanOrg });
       });
     }
   });
@@ -375,9 +375,9 @@ async function addAlumni() {
     current_email: getVal('input[placeholder="jdelacruz@up.edu.ph"]'),
     phone_number: phone,
     current_address: getVal('input[placeholder="Your Home Address"]'),
-    academicHist,
-    employmentHist,
-    activeOrgs,
+    academic_hist,
+    employment_hist,
+    active_orgs,
   };
 
   try {
@@ -471,12 +471,10 @@ let sortOrder = {
   entry_date: "asc",
 };
 
-async function getAlumnis(sortBy = "none", filters = null){
-  if (!filters) {
-    filters = JSON.parse(localStorage.getItem("filters"));
-    if (!filters) filters = JSON.parse(JSON.stringify(blankFilters));
-  }
-
+async function getAlumnis(sortBy = "none"){
+  filters = JSON.parse(localStorage.getItem("filters"));
+  if (filters == null) filters = JSON.parse(JSON.stringify(blankFilters));
+  localStorage.setItem("filters", JSON.stringify(blankFilters));
   try {
     const alternateOrder = {
       "asc":"desc",

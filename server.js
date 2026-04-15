@@ -163,9 +163,9 @@ app.post("/add-alumni", async (req, res) => {
     current_email,
     phone_number,
     current_address,
-    academicHist,
-    employmentHist,
-    activeOrgs
+    academic_hist,
+    employment_hist,
+    active_orgs
   } = req.body;
 
   const client = await pool.connect();
@@ -231,8 +231,8 @@ app.post("/add-alumni", async (req, res) => {
     const alumni_id = alumniResult.rows[0].alumni_id;
     console.log(alumniResult.rows[0]);
     let acadHistoryEntry;
-    for (i = 0 ; i < academicHist.length; i++){
-      acadHistoryEntry = academicHist[i];
+    for (i = 0 ; i < academic_hist.length; i++){
+      acadHistoryEntry = academic_hist[i];
       await client.query(
         `INSERT INTO academicHistory
         (
@@ -262,8 +262,8 @@ app.post("/add-alumni", async (req, res) => {
     }
 
     let employmentHistEntry;
-    for (i = 0 ; i < employmentHist.length; i++){
-      employmentHistEntry = employmentHist[i];
+    for (i = 0 ; i < employment_hist.length; i++){
+      employmentHistEntry = employment_hist[i];
       await client.query(
         `INSERT INTO employmenthistory
         (
@@ -289,8 +289,8 @@ app.post("/add-alumni", async (req, res) => {
     }
     
     let activeOrgEntry;
-    for (i = 0 ; i < activeOrgs.length; i++){
-      activeOrgEntry = activeOrgs[i];
+    for (i = 0 ; i < active_orgs.length; i++){
+      activeOrgEntry = active_orgs[i];
       await client.query(
         `INSERT INTO activeorganizations
         (
@@ -459,11 +459,11 @@ app.get("/get-alumnis", async (req, res) => {
         ) AS active_orgs
 
     FROM alumni_base a
-    INNER JOIN acad_hist ah
+    LEFT JOIN acad_hist ah
         ON a.alumni_id = ah.alumni_id
-    INNER JOIN emp_hist eh
+    LEFT JOIN emp_hist eh
         ON a.alumni_id = eh.alumni_id
-    INNER JOIN active_org ao
+    LEFT JOIN active_org ao
         ON a.alumni_id = ao.alumni_id
 
     GROUP BY
