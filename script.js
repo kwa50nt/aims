@@ -1,147 +1,103 @@
-const portNumberBackEnd = 3001
+const portNumberBackEnd = 3001;
 const blankFilters = {
   gender: [],
   studentNum: [],
   entryDate: [],
-  employment:[],
-  activOrgs:[],
-  acadHist:{
-    degreeAndUniv:[],
-    dateStart:[],
-    gradDate:[]
-  }
-}
+  employment: [],
+  activOrgs: [],
+  acadHist: {
+    degreeUniv: [],
+    dateStart: [],
+    gradDate: [],
+  },
+};
 //  type: index sa dict
 // to add sa gender type = ["gender"]
 // to add sa gradDate type = ["acadHist", "gradDate"]
 
-function dictIsEqual(f1, f2){
-  if (f1.length != f2.length){
-    return false
+function dictIsEqual(f1, f2) {
+  const keys1 = Object.keys(f1);
+  const keys2 = Object.keys(f2);
+
+  if (keys1.length !== keys2.length) {
+    return false;
   }
-  for (let elem1 in f1){
-    if ( f1[elem1] != f2[elem1]){
+
+  for (let key of keys1) {
+    if (f1[key] !== f2[key]) {
       return false;
     }
   }
   return true;
 }
 
-function addFilter(path, filter){
-  let filters = JSON.parse(localStorage.getItem("filters")) || blankFilters;
-  console.log(filters);
+function addFilter(path, filter) {
+  let filters = JSON.parse(localStorage.getItem("filters"));
+  if (!filters) filters = JSON.parse(JSON.stringify(blankFilters));
 
-  let lst = path.reduce((ret, t) => ret[t], filters)
-  if (lst == undefined){
-    console.log("wrong path value")
+  let lst = path.reduce((ret, t) => ret[t], filters);
+  if (lst == undefined) {
+    console.log("wrong path value");
     return false;
   }
 
-  for (let elem of lst){
-    console.log(elem);
-    if (dictIsEqual(elem, filter)){
-      console.log("duplicate filter exists")
+  for (let elem of lst) {
+    if (dictIsEqual(elem, filter)) {
+      console.log("duplicate filter exists");
       return false;
     }
   }
-  
-  // add filter
+
   lst.push(filter);
-  console.log(filters);
-
-  console.log("filter added")
   localStorage.setItem("filters", JSON.stringify(filters));
   return true;
 }
 
-function deleteFilter(path, filter){
-  let filters = JSON.parse(localStorage.getItem("filters")) || blankFilters;
-  console.log(filters);
-  let lst = path.reduce((ret, t) => ret[t], filters)
-  if (lst == undefined){
-    console.log("wrong path value")
-    return false;
+function deleteFilter(path, filter) {
+  let filters = JSON.parse(localStorage.getItem("filters"));
+  if (!filters) return false;
+
+  let lst = path.reduce((ret, t) => ret[t], filters);
+  if (lst == undefined) return false;
+
+  const oldLen = lst.length;
+  lst = lst.filter((i) => !dictIsEqual(i, filter));
+
+  if (oldLen == lst.length) return false;
+
+  if (path.length == 1) {
+    filters[path[0]] = lst;
+  } else if (path.length == 2) {
+    filters[path[0]][path[1]] = lst;
   }
 
-  const oldLen = lst.length
-  lst = lst.filter(i => !dictIsEqual(i, filter));
-
-  
-  // no existing filter
-  if (oldLen == lst.length){
-    console.log("nothing to delete")
-    return false
-  }
-  // assign the lst
-  if ( path.length == 1){
-    filters[path[0]] = lst
-  }
-  else if (path.length == 2 ){
-    filters[path[0]][path[1]] = lst
-  }
-
-  console.log(filters);
   localStorage.setItem("filters", JSON.stringify(filters));
-  console.log("deleted value")
-  return true
+  return true;
 }
-function filterTest(){
+
+function filterTest() {
   filters = {
-  gender: [],
-  studentNum: [],
-  entryDate: [],
-  employment:[
-    {
-      company: "Oracle Philippines",
-      isCurrent: "true",
-      flag: "exclude"
-    },
-    {
-      company: "Accenture",
-      isCurrent: "true",
-      flag: "exclude"
-    }
-  ],
-  activOrgs:[
-    {   
-      org: "IEEE Computer Society",
-      flag: "exclude"
-    },
-    {
-      org: "AWS User Group Philippines",
-      flag: "exclude"
-    }
-  ],
-  acadHist:{
-    degreeAndUniv:[
+    gender: [
       {
-        degreeName: "BS Computer Engineering",
-        univName: "Mapua University",
-        flag: "exclude"
+        gender: "F",
+        flag: "exclude",
       },
-      {
-        degreeName: "BS Computer Science",
-        univName: "University of the Philippines",
-        flag: "exclude"
-      }
     ],
-    dateStart:[
-      
-    ],
-    gradDate:[
+    studentNum: [
       {
-        start: "2015",
-        end: "2020",
-        flag: "exclude"
+        start: 2020,
+        end: 2025,
+        flag: "exclude",
       },
+    ],
+    entryDate: [
       {
-        start: "2021",
-        end: "2022",
-        flag: "exclude"
-      }
-    ]
-  }
-}
+        start: "2020-2-2",
+        end: "2025-2-2",
+        flag: "exclude",
+      },
+    ],
+  };
   getAlumnis("none", filters);
 }
 
@@ -237,7 +193,7 @@ function addOrganization() {
   row.innerHTML = `
     <div>
       <label>Organization</label>
-      <input type="text" placeholder="Another Organization">
+      <input type="text" placeholder="Organization">
     </div>
 
     <button type="button" class="circle-btn minus" onclick="removeRow(this)">
@@ -248,182 +204,239 @@ function addOrganization() {
   container.appendChild(row);
 }
 
-
 function removeRow(button) {
   const row = button.parentElement;
   row.remove();
 }
 
+function formatMonthYearToDate(input) {
+  if (!input) return null;
+
+  const parts = input.split("/");
+
+  if (parts.length !== 2) return null;
+
+  const [month, year] = parts;
+
+  if (month.length !== 2 || year.length !== 4) return null;
+
+  return `${year}-${month}-01`;
+}
+
 async function addAlumni() {
   const form = document.querySelector(".alumni-form");
 
-  const userEmail = form.querySelector('input[placeholder="jdelacruz@up.edu.ph"]').value;
+  const getVal = (selector) => {
+    const el = form.querySelector(selector);
+    if (!el) return null;
+    const val = el.value.trim();
+    return val === "" ? null : val;
+  };
 
-  // Generate unique account email (for testing duplicate constraint)
   const randomSuffix = Math.floor(Math.random() * 100000);
   const accountEmail = `test+${randomSuffix}@example.com`;
 
   const academicHist = Array.from(
-  document.querySelectorAll("#graduate-container .graduate-row")
-)
-  .map(row => {
-    const degree = row.querySelector('input[placeholder="Degree"]').value.trim();
-    // const latinHonor = row.querySelector('input[placeholder="Latin Honor"]').value.trim();
-    const latinHonor = null;
-    const gradYearInput = row.querySelector('input[placeholder="MM/YYYY"]').value.trim();
-    const yearStartedInput = row.querySelector('input[placeholder="2nd Sem, 2026"]').value.trim();
-
-    const year_graduated =
-      gradYearInput && gradYearInput.includes("/")
-        ? parseInt(gradYearInput.split("/")[1])
-        : null;
-
-    const year_started =
-      parseInt(yearStartedInput.split[1]) ? parseInt(yearStartedInput.split[1]) > 999 ? parseInt(yearStartedInput.split[1]) :"wrong" :null;
-    const selects = row.querySelectorAll("select");
-
-    const semester_started =
-      yearStartedInput.split[0] === "1st Sem" ? 1 :
-      yearStartedInput.split[0] === "2nd Sem" ? 2 :
-      null;
-
-    const semester_graduated =
-      selects[1]?.value === "1st" ? 1 :
-      selects[1]?.value === "2nd" ? 2 :
-      null;
-
-    // Skip completely empty rows
-    if (!degree && !year_started && !year_graduated) return null;
-
-    return {
-      degree_name: degree,
-      year_started,
-      semester_started,
-      year_graduated,
-      semester_graduated,
-      latin_honor: latinHonor || null
-    };
-  })
-  .filter(Boolean);
-
-  const employmentHist = Array.from(
-    document.querySelectorAll("#employment-container .employment-row")
+    document.querySelectorAll("#graduate-container .graduate-row"),
   )
-    .map(row => {
-      const employer = row.querySelector('input[placeholder="Employer"]').value.trim() === "" 
-        ? null 
-        : row.querySelector('input[placeholder="Employer"]').value.trim();
-      const position = row.querySelector('input[placeholder="Position"]').value.trim() === "" 
-        ? null
-        : row.querySelector('input[placeholder="Position"]').value.trim();
-
-      const dateInputs = row.querySelectorAll('input[placeholder="MM/YYYY"]');
-
-      const startRaw = dateInputs[0]?.value || "";
-      const endRaw = dateInputs[1]?.value || "";
-
-      const convertToSQLDate = (val) => {
-        if (!val ) return null;
-        if (!val.includes("/")) return val;
-        const [month, year] = val.split("/");
-        return `${year}-${month.padStart(2, "0")}-01`;
+    .map((row) => {
+      const getRowVal = (sel) => {
+        const el = row.querySelector(sel);
+        return el ? el.value.trim() : "";
       };
 
-      if (!employer && !position) return null; 
+      const degree = getRowVal('input[placeholder="BS Economics"]') || null;
+      const university = getRowVal('input[placeholder="e.g. University of the Philippines"]') || null;
+      
+      const latinHonorRaw = getRowVal(".latin-honors");
+      let latin_honor = (!latinHonorRaw || latinHonorRaw === "N/A" || latinHonorRaw === "") ? null : latinHonorRaw;
+      
+      if (latin_honor) {
+        latin_honor = latin_honor.toLowerCase().replace(/ /g, "_");
+      }
+      
+      const yearStartedInput = getRowVal('input[placeholder="1st Sem, 2026"]');
+      const gradYearInput = getRowVal('input[placeholder="2nd Sem, 2030"]');
+
+      const parseYear = (str) => {
+        const match = str.match(/\b\d{4}\b/);
+        return match ? parseInt(match[0]) : null;
+      };
+
+      const parseSem = (str) => {
+        const lower = str.toLowerCase();
+        if (lower.includes("1st") || lower.includes("1")) return 1;
+        if (lower.includes("2nd") || lower.includes("2")) return 2;
+        if (lower.includes("3rd") || lower.includes("mid")) return 3;
+        return null;
+      };
+
+      const year_started = parseYear(yearStartedInput);
+      const semester_started = parseSem(yearStartedInput);
+      const year_graduated = parseYear(gradYearInput);
+      const semester_graduated = parseSem(gradYearInput);
+
+      if (!degree && !year_started && !year_graduated) return null;
+
+      return {
+        degree_name: degree,
+        year_started,
+        granting_university: university,
+        semester_started,
+        year_graduated,
+        semester_graduated,
+        latin_honor,
+      };
+    })
+    .filter(Boolean);
+
+  const employmentHist = Array.from(
+    document.querySelectorAll("#employment-container .employment-row"),
+  )
+    .map((row) => {
+      const employer = row.querySelector('input[placeholder="e.g. Google, Inc."]')?.value.trim() || null;
+      const position = row.querySelector('input[placeholder="e.g. Head Software Engineer"]')?.value.trim() || null;
+      const dateInputs = row.querySelectorAll('input[placeholder="MM/YYYY"]');
+
+      const startRaw = dateInputs[0]?.value.trim() || "";
+      const endRaw = dateInputs[1]?.value.trim() || "";
+
+      const convertToSQLDate = (val) => {
+        if (!val || val.toLowerCase() === "present") return null;
+        if (val.includes("/")) {
+            const [month, year] = val.split("/");
+            return `${year}-${month.padStart(2, "0")}-01`;
+        }
+        if (val.length === 4) return `${val}-01-01`;
+        return null;
+      };
+
+      if (!employer && !position) return null;
+
+      const isPresent = endRaw.toLowerCase() === "present" || endRaw === "";
 
       return {
         employer,
         last_position_held: position,
         start_date: convertToSQLDate(startRaw),
-        end_date: endRaw.toLowerCase() === "present"
-          ? null
-          : convertToSQLDate(endRaw),
-        is_current: endRaw.toLowerCase() === "present"
+        end_date: isPresent ? null : convertToSQLDate(endRaw),
+        is_current: isPresent, 
       };
     })
     .filter(Boolean);
-  
 
-  const activeOrgsInput =
-    form.querySelector('input[placeholder="Org1, org2, org3"]').value;
+  const activeOrgs = [];
+  document.querySelectorAll('#organization-container input[placeholder="Organization"]').forEach(input => {
+    const val = input.value.trim();
+    if (val) {
+      val.split(",").forEach(org => {
+        const cleanOrg = org.trim();
+        if (cleanOrg) activeOrgs.push({ organization_name: cleanOrg });
+      });
+    }
+  });
 
-  const activeOrgs = activeOrgsInput
-    .split(",")
-    .map(org => org.trim())
-    .filter(org => org.length > 0)
-    .map(org => ({ organization_name: org }));
+  const entry_date = (() => {
+      const inputEls = Array.from(form.querySelectorAll('input[placeholder="MM/YYYY"]'));
+      const inputEl = inputEls.find(el => el.closest('div')?.querySelector('label')?.innerText.includes('Entry Date')) || inputEls[0];
+      
+      const raw = inputEl ? inputEl.value.trim() : "";
+      if (!raw) return null;
+      if (raw.includes("/")) {
+          const [month, year] = raw.split("/");
+          return `${year}-${month.padStart(2, "0")}-01`;
+      }
+      if (raw.length === 4) return `${raw}-01-01`;
+      return null;
+  })();
+
+  // Format phone number for DB ("0917..." -> "917...")
+  let phone = getVal('input[placeholder="e.g. 09XXXXXXXXX"]');
+  if (phone) {
+    phone = phone.replace(/[-\s]/g, "");  // Remove any spaces or dashes
+    if (phone.startsWith("0") && phone.length === 11) {
+      phone = phone.substring(1);  // Strips the first zero
+    } else if (phone.startsWith("+63")) {
+      phone = phone.substring(3);  // Strips the +63 if used
+    }
+  }
 
   const data = {
     email: accountEmail,
     password: "123456",
-    last_name: form.querySelector('input[placeholder="Last Name"]').value || null,
-    first_name: form.querySelector('input[placeholder="First Name"]').value || null,
-    middle_name: form.querySelector('input[placeholder="M.I."]').value || null,
-    suffix: form.querySelector('input[placeholder="Jr., III, etc."]').value || null,
-    maiden_name: form.querySelector('input[placeholder="Maiden Name"]').value || null,
-    gender: form.querySelector('input[placeholder="Gender"]').value,
-    student_number: form.querySelector('input[placeholder="xxxx-xxxxx"]').value ? form.querySelector('input[placeholder="xxxx-xxxxx"]').value:null,
-    entry_date: (() => {
-      const raw = form.querySelector('input[placeholder="DD/MM/YYYY"]').value;
-      if (!raw || !raw.includes("/")) return null;
-      const [day, month, year] = raw.split("/");
-      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-    })(),
-    current_email: userEmail ? userEmail : null,
-    phone_number: form.querySelector('input[placeholder="Your Number"]').value ? form.querySelector('input[placeholder="Your Number"]').value : null,
-    current_address: form.querySelector('input[placeholder="Your Home Address"]').value ? form.querySelector('input[placeholder="Your Home Address"]').value : null,
+    first_name: getVal('input[placeholder="First Name"]'),
+    last_name: getVal('input[placeholder="Last Name"]'),
+    middle_name: getVal('input[placeholder="M.I."]'),
+    suffix: getVal('input[placeholder="Jr., III, etc."]'),
+    maiden_name: getVal('input[placeholder="Maiden Name"]'),
+    gender: getVal('select.sex'),
+    student_number: getVal('input[placeholder="xxxx-xxxxx"]'),
+    entry_date: entry_date,
+    current_email: getVal('input[placeholder="jdelacruz@up.edu.ph"]'),
+    phone_number: phone,
+    current_address: getVal('input[placeholder="Your Home Address"]'),
     academicHist,
     employmentHist,
-    activeOrgs
+    activeOrgs,
   };
 
   try {
-    const response = await fetch(`http://localhost:${portNumberBackEnd}/add-alumni`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-    errorMsgParsing = {}
-    errorMsgParsing["enum genders"] = "Invalid input for gender" 
-    errorMsgParsing["null value in column \"entry_date\""] = "Please add entry date"
-    errorMsgParsing["type date"] = "Please follow prescribed format for date"
-    errorMsgParsing["violates check constraint \"email_format\""] = "Please input a valid email address"
-    errorMsgParsing["phone_number_format"] = "Please input a valid number"
-    errorMsgParsing["null value in column \"phone_number\""] = "Please input a number"
-    errorMsgParsing["null value in column \"student_number\""] = "Please add a student number"
-    errorMsgParsing["student_number_format"] = "Please follow student number format XXXX-XXXXX"
-    errorMsgParsing["null value in column \"start_date\""] = "Please input a entry date for the employment history"
-    errorMsgParsing["null value in column \"end_date\" "] = "Please input a end date for the employment history"
-    errorMsgParsing["time field value out of range"] = "Please input valid date"
-    errorMsgParsing["null value in column \"employer\" "] = "Please input an employer"
-    errorMsgParsing["null value in column \"last_position_held\" "] = "Please input last position held"
-    errorMsgParsing["duplicate key value violates unique constraint \"upsealumni_student_number_key\""] = "Student number already in system"
-    errorMsgParsing["invalid input syntax for type integer: \"false\""] = "Please input a valid year"
-    errorMsgParsing["null value in column \"year_started\""] = "Please input year started"
-    errorMsgParsing["invalid input syntax for type integer: \"wrong\""] = "Please input valid year"
-    errorMsgParsing["null value in column \"semester_started\""] = "Please select which semester started"
-    errorMsgParsing["null value in column \"current_email\""] = "Please input an email"
-    // errorMsgParsing["null value in column "] = "Please input year started"
-    // errorMsgParsing["null value in column "] = "Please input year started"
-    // errorMsgParsing["null value in column "] = "Please input year started"
-    // errorMsgParsing["null value in column "] = "Please input year started"
+    const response = await fetch(
+      `http://localhost:${portNumberBackEnd}/add-alumni`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      },
+    );
     
+    const errorMsgParsing = {
+      "enum genders": "Invalid input for gender.",
+      "null value in column \"entry_date\"": "Please add an entry date.",
+      "type date": "Please follow the prescribed format for the date.",
+      "violates check constraint \"email_format\"": "Please input a valid email address.",
+      "phone_number_format": "Please input a valid mobile number (11 digits e.g. 09XXXXXXXXX).",
+      "null value in column \"phone_number\"": "Please input a mobile number.",
+      "null value in column \"student_number\"": "Please add a student number.",
+      "student_number_format": "Please follow the student number format XXXX-XXXXX.",
+      "null value in column \"start_date\"": "Please input a start date for the employment history.",
+      "null value in column \"end_date\"": "Please input an end date for the employment history.",
+      "time field value out of range": "Please input a valid date.",
+      "null value in column \"employer\"": "Please input an employer.",
+      "null value in column \"last_position_held\"": "Please input the last position held.",
+      "duplicate key value violates unique constraint \"upsealumni_student_number_key\"": "Student number already in system.",
+      "null value in column \"year_started\"": "Please input the year started.",
+      "null value in column \"semester_started\"": "Please select which semester started.",
+      "null value in column \"granting_university\"": "Please input the University Studied.",
+      "null value in column \"degree_name\"": "Please input the Degree Name.",
+      "null value in column \"current_email\"": "Please input a primary email address."
+    };
+
     const fetched = await response.json();
-    const errorMsg = fetched["error"]
+    const errorMsg = fetched["error"];
     console.log("Server Response:", fetched);
-    if (errorMsg != "None"){
-      for (key in errorMsgParsing){
-        if (errorMsg.includes(key)){
-          alert(errorMsgParsing[key])
+    
+    if (errorMsg && errorMsg !== "None") {
+      let matched = false;
+      for (const key in errorMsgParsing) {
+        if (errorMsg.includes(key)) {
+          alert(errorMsgParsing[key]);
+          matched = true;
+          break;
+        }
       }
-      }     
+      if (!matched) alert("Database Error: " + errorMsg);
+    } else {
+      alert("Alumni record added successfully!");
     }
   } catch (err) {
     console.log("error adding alumni:", err);
+    alert("Network Error: Could not connect to the server.");
   }
 }
 
-async function deleteAlumni(alumniId) {//parameter nlng alumniId since ginagamit naman din pareho sa pag delete sa frontend at backend
+async function deleteAlumni(alumniId) {
+  //parameter nlng alumniId since ginagamit naman din pareho sa pag delete sa frontend at backend
   const confirmDelete = confirm("Delete this alumni?");
   if (!confirmDelete) return;
 
@@ -434,31 +447,37 @@ async function deleteAlumni(alumniId) {//parameter nlng alumniId since ginagamit
 
     updateSelectedCount();
     //backend delete portion
-    const response = await fetch(`http://localhost:${portNumberBackEnd}/delete-alumni/${alumniId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
+    const response = await fetch(
+      `http://localhost:${portNumberBackEnd}/delete-alumni/${alumniId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
 
     const fetched = await response.json();
     console.log("Server Response:", fetched);
-
   } catch (err) {
     console.log("error deleting alumni:", err);
   }
 }
 
 let sortOrder = {
-  "last_name" : "asc",
-  "gender" : "asc",
-  "student_number" : "asc",
-  "entry_date" : "asc"
-}
-async function getAlumnis(sortBy = "none", filters =blankFilters){
+  last_name: "asc",
+  gender: "asc",
+  student_number: "asc",
+  entry_date: "asc",
+};
+
+async function getAlumnis(sortBy = "none", filters = null){
+  if (!filters) {
+    filters = JSON.parse(localStorage.getItem("filters"));
+    if (!filters) filters = JSON.parse(JSON.stringify(blankFilters));
+  }
+
   try {
-    // frontend: comment out the fetching and result of fetching para di mag error sainyo
-    // fetching the server
     const alternateOrder = {
       "asc":"desc",
       "desc":"asc",
@@ -470,24 +489,22 @@ async function getAlumnis(sortBy = "none", filters =blankFilters){
       sortOrder[sortBy] = alternateOrder[sortOrder[sortBy]];
     }
 
-    else{}
-    const response = await fetch(`http://localhost:${portNumberBackEnd}/get-alumnis?sortBy=${sortBy}&order=${order}&filters=${JSON.stringify(filters)}`, {
+    const encodedFilters = encodeURIComponent(JSON.stringify(filters));
+
+    const response = await fetch(`http://localhost:${portNumberBackEnd}/get-alumnis?sortBy=${sortBy}&order=${order}&filters=${encodedFilters}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
       }
     });
     
-    // result of fetching
     const fetched = await response.json();
-    console.log(fetched); 
     renderAlumniTable(fetched);
   }
   catch (err){
     console.log("error getting alumni:", err);
     document.getElementById("alumni-table-body").innerHTML = `<p class="no-records">Failed to load alumni records. Please try again.</p>`;
   }
-
 }
 
 async function uploadExcel() {
@@ -503,10 +520,13 @@ async function uploadExcel() {
   formData.append("file", file);
 
   try {
-    const response = await fetch(`http://localhost:${portNumberBackEnd}/upload-excel`, {
-      method: "POST",
-      body: formData
-    });
+    const response = await fetch(
+      `http://localhost:${portNumberBackEnd}/upload-excel`,
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
 
     const result = await response.json();
 
@@ -528,7 +548,6 @@ function renderAlumniTable(alumniData) {
   const main = document.getElementById("alumni-table-body");
   main.innerHTML = "";
 
-  // alumniData is in extracted from JSON format
   const entries = Object.values(alumniData);
 
   if (entries.length == 0) {
@@ -536,29 +555,39 @@ function renderAlumniTable(alumniData) {
     return;
   }
 
-  entries.forEach(alumni => {
+  entries.forEach((alumni) => {
     main.appendChild(renderAlumniRow(alumni));
-  })
+  });
 }
 
 function renderAlumniRow(alumni) {
-  // Name
-  const fullName = [alumni.first_name, alumni.middle_name, alumni.last_name, alumni.suffix].filter(Boolean).join(" ");
+  const fullName = [
+    alumni.first_name,
+    alumni.middle_name,
+    alumni.last_name,
+    alumni.suffix,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
-  // Organizations
-  const orgsHTML = (alumni.active_orgs || []).map(org => {
-    const name = typeof org === "object" ? org.organization_name : org;
-    return `
+  const orgsHTML =
+    (alumni.activeOrgs || [])
+      .map((org) => {
+        const name = typeof org === "object" ? org.organization_name : org;
+        return `
       <div class="mini-info">
         <img src="assets/black-circle.png" alt="">
         <p>${name}</p>
       </div>`;
-  }).join("") || "<p>—</p>";
+      })
+      .join("") || "<p>—</p>";
 
-  // Employment
-  const employments = alumni.employment_hist || [];
+  const employments = alumni.employmentHist || [];
   const sorted = [...employments].sort((a, b) => b.is_current - a.is_current);
-  const empHTML = sorted.map(emp => `
+  const empHTML =
+    sorted
+      .map(
+        (emp) => `
     <div class="employment-entry">
       <div class="mini-info">
         <img src="assets/black-circle.png" alt="">
@@ -572,35 +601,43 @@ function renderAlumniRow(alumni) {
         <img src="assets/calendar.png" alt="">
         <p>${formatDate(emp.start_date)} – ${emp.is_current ? "Present" : formatDate(emp.end_date)}</p>
       </div>
-    </div>`).join("") || "<p>—</p>";
+    </div>`,
+      )
+      .join("") || "<p>—</p>";
 
-  const workCellHTML = employments.length > 1
-    ? `<img src="assets/CaretCircleDown.png" alt="" class="toggle-emp" title="Toggle all employment">
+  const workCellHTML =
+    employments.length > 1
+      ? `<img src="assets/CaretCircleDown.png" alt="" class="toggle-emp" title="Toggle all employment">
        <div class="emp-entries collapsed">${empHTML}</div>`
-    : `<div class="emp-entries">${empHTML}</div>`;
+      : `<div class="emp-entries">${empHTML}</div>`;
 
-  // Graduation info
-  const gradInfos = alumni.academic_hist || [];
+  const gradInfos = alumni.academicHist || [];
 
-  const gradHTML = gradInfos.map((g, i) => {
-    const degree = g.degree_name ? (typeof g.degree_name === "object" ? g.degree_name : g.degree_name) : null;
-    const honor = g.latin_honor;
-    const gradYear = g.year_graduated
-      ? `${g.semester_graduated === 1 ? "01" : "06"}/${g.year_graduated}`
-      : null;
+  const gradHTML =
+    gradInfos
+      .map((g, i) => {
+        const degree = g.degree_name
+          ? typeof g.degree_name === "object"
+            ? g.degree_name
+            : g.degree_name
+          : null;
+        const honor = g.latin_honor;
+        const gradYear = g.year_graduated
+          ? `${g.semester_graduated === 1 ? "01" : "06"}/${g.year_graduated}`
+          : null;
 
-    return `
+        return `
       ${degree ? `<div class="mini-info"><img src="assets/GraduationCap.png" alt=""><p>${degree}</p></div>` : ""}
       ${honor ? `<div class="mini-info"><img src="assets/Student.png" alt=""><p>${honor}</p></div>` : ""}
       ${gradYear ? `<div class="mini-info"><img src="assets/calendar.png" alt=""><p>${gradYear}</p></div>` : ""}
     `;
-  }).join("") || "<p>—</p>";
+      })
+      .join("") || "<p>—</p>";
 
-  // Row element
   const row = document.createElement("div");
   row.className = "alumni-row";
   row.dataset.alumniId = alumni.alumni_id;
-  // store email to make exporting easier
+
   row.dataset.email = alumni.current_email || "";
 
   row.innerHTML = `
@@ -608,7 +645,7 @@ function renderAlumniRow(alumni) {
     <div class="name-cell">
       <img src="assets/email popup.png" alt="" title="${alumni.current_email}">
       <img src="assets/number popup.png" alt="" title="${alumni.phone_number}">
-      <img src="assets/location popup.png" alt="" title="${alumni.current_address || 'No address on record'}">
+      <img src="assets/location popup.png" alt="" title="${alumni.current_address || "No address on record"}">
       <p>${fullName}</p>
     </div>
     <p>${alumni.gender || "—"}</p>
@@ -662,16 +699,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (headerCheckbox) {
     headerCheckbox.addEventListener("change", () => {
-      tableBody.querySelectorAll(".alumni-row input[type='checkbox']").forEach(box => {
-        box.checked = headerCheckbox.checked;
-      })
+      tableBody
+        .querySelectorAll(".alumni-row input[type='checkbox']")
+        .forEach((box) => {
+          box.checked = headerCheckbox.checked;
+        });
       updateSelectedCount();
-    })
+    });
   }
 });
 
 function updateSelectedCount() {
-  const checked = document.querySelectorAll(".alumni-row input[type='checkbox']:checked");
+  const checked = document.querySelectorAll(
+    ".alumni-row input[type='checkbox']:checked",
+  );
   const checkedCount = document.getElementById("selected-label");
   if (checkedCount) {
     checkedCount.textContent = `${checked.length}`;
@@ -679,12 +720,14 @@ function updateSelectedCount() {
 }
 
 function exportEmails() {
-  let targetRows = [...document.querySelectorAll(".alumni-row input[type='checkbox']:checked")].map(box => box.closest(".alumni-row"));
+  let targetRows = [
+    ...document.querySelectorAll(".alumni-row input[type='checkbox']:checked"),
+  ].map((box) => box.closest(".alumni-row"));
   if (targetRows.length == 0) {
     targetRows = [...document.querySelectorAll(".alumni-row")];
   }
 
-  const emails = targetRows.map(row => row.dataset.email).filter(Boolean);
+  const emails = targetRows.map((row) => row.dataset.email).filter(Boolean);
 
   if (emails.length === 0) {
     alert("No email addresses found in the selected records.");
@@ -704,23 +747,29 @@ function exportEmails() {
 
 // Add Records Tab view switching
 function showView(view) {
-  const views = ['excel', 'add', 'confirm'];
-  const sidebar = { excel: 'sidebar-excel', add: 'sidebar-add', confirm: 'sidebar-confirm' };
+  const views = ["excel", "add", "confirm"];
+  const sidebar = {
+    excel: "sidebar-excel",
+    add: "sidebar-add",
+    confirm: "sidebar-confirm",
+  };
 
-  views.forEach(v => {
-    const el = document.getElementById('view-' + v);
-    if (el) el.style.display = (v === view) ? (v === 'excel' ? 'block' : 'flex') : 'none';
+  views.forEach((v) => {
+    const el = document.getElementById("view-" + v);
+    if (el)
+      el.style.display =
+        v === view ? (v === "excel" ? "block" : "flex") : "none";
     const sidebarEl = document.getElementById(sidebar[v]);
-    if (sidebarEl) sidebarEl.classList.toggle('active-sidebar', v === view);
+    if (sidebarEl) sidebarEl.classList.toggle("active-sidebar", v === view);
   });
 }
 
 async function loadSampleExcelData() {
-  const wrapper = document.getElementById('excel-table-wrapper');
-  const body = document.getElementById('import-table-body');
+  const wrapper = document.getElementById("excel-table-wrapper");
+  const body = document.getElementById("import-table-body");
 
   // If already visible, don't re-upload
-  if (wrapper.style.display === 'block') return;
+  if (wrapper.style.display === "block") return;
 
   // Create a hidden file input
   const input = document.createElement("input");
@@ -735,10 +784,13 @@ async function loadSampleExcelData() {
     formData.append("file", file);
 
     try {
-      const response = await fetch(`http://localhost:${portNumberBackEnd}/upload-excel`, {
-        method: "POST",
-        body: formData
-      });
+      const response = await fetch(
+        `http://localhost:${portNumberBackEnd}/upload-excel`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
 
       const result = await response.json();
       console.log("Excel upload response:", result);
@@ -748,10 +800,11 @@ async function loadSampleExcelData() {
         return;
       }
 
-      // OPTIONAL: render preview if backend returns data
       const rows = result.data || [];
 
-      body.innerHTML = rows.map(row => `
+      body.innerHTML = rows
+        .map(
+          (row) => `
         <div class="alumni-row">
           <input type="checkbox">
           <div class="name-cell">
@@ -765,10 +818,11 @@ async function loadSampleExcelData() {
           <div class="grad-cell"><p>—</p></div>
           <div><p>—</p></div>
         </div>
-      `).join("");
+      `,
+        )
+        .join("");
 
-      wrapper.style.display = 'block';
-
+      wrapper.style.display = "block";
     } catch (err) {
       console.log("Excel upload error:", err);
       alert("Upload failed");
@@ -778,20 +832,175 @@ async function loadSampleExcelData() {
   input.click();
 }
 
-
 // Start with Excel view when opening Add Records tab
 document.addEventListener("DOMContentLoaded", () => {
-  if (document.getElementById('sidebar-excel')) {
-    showView('excel');
+  if (document.getElementById("sidebar-excel")) {
+    showView("excel");
   }
 });
 
 function toggleAdminPanel() {
-    const panel = document.getElementById("admin-panel");
+  const panel = document.getElementById("admin-panel");
 
-    if(panel.style.display === "block"){
-        panel.style.display = "none";
-    } else {
-        panel.style.display = "block";
-    }
+  if (panel.style.display === "block") {
+    panel.style.display = "none";
+  } else {
+    panel.style.display = "block";
+  }
 }
+
+// Filter dropdown
+
+function toggleFilterMenu() {
+  const menu = document.getElementById("filter-menu");
+  const isOpen = menu.style.display === "block";
+  menu.style.display = isOpen ? "none" : "block";
+  if (isOpen) closeAllPanels();
+}
+
+function closeFilterMenu() {
+  const menu = document.getElementById("filter-menu");
+  menu.style.display = "none";
+  closeAllPanels();
+}
+
+function toggleFilterPanel(type) {
+  const panel = document.getElementById("panel-" + type);
+  const arrow = document.getElementById("arrow-" + type);
+  const allPanels = ["sex", "studentNum", "entryDate"];
+
+  allPanels.forEach((t) => {
+    if (t !== type) {
+      document.getElementById("panel-" + t).style.display = "none";
+      document.getElementById("arrow-" + t).classList.remove("open");
+    }
+  });
+
+  const isOpen = panel.style.display === "block";
+  panel.style.display = isOpen ? "none" : "block";
+  arrow.classList.toggle("open", !isOpen);
+}
+
+function closeAllPanels() {
+  ["sex", "studentNum", "entryDate"].forEach((t) => {
+    document.getElementById("panel-" + t).style.display = "none";
+    document.getElementById("arrow-" + t).classList.remove("open");
+  });
+}
+
+function applyFilter(type) {
+  if (type === "sex") {
+    const checked = [...document.querySelectorAll('input[name="sex"]:checked')];
+    if (checked.length === 0) { alert("Please select at least one option."); return; }
+    
+    // Create the expected object
+    checked.forEach(cb => {
+        addFilter(["gender"], { gender: cb.value, flag: "include" });
+    });
+
+  } else if (type === "studentNum") {
+    const from = document.getElementById("filter-studentNum-from").value.trim();
+    const to   = document.getElementById("filter-studentNum-to").value.trim();
+    if (!from && !to) { alert("Please enter at least one year."); return; }
+    
+    // Parse years as integers, null if left blank
+    const filterObj = {
+        start: from ? parseInt(from) : null,
+        end: to ? parseInt(to) : null,
+        flag: "include"
+    };
+    addFilter(["studentNum"], filterObj);
+
+  } else if (type === "entryDate") {
+    const from = document.getElementById("filter-entryDate-from").value.trim();
+    const to   = document.getElementById("filter-entryDate-to").value.trim();
+    if (!from && !to) { alert("Please enter at least one date."); return; }
+
+    // Helper to format MM/YYYY to YYYY-MM-DD
+    const formatForBackend = (val) => {
+        if (!val || !val.includes('/')) return null;
+        const [month, year] = val.split('/');
+        return `${year}-${month.padStart(2, '0')}-01`;
+    };
+
+    const filterObj = {
+        start: formatForBackend(from) || null,
+        end: formatForBackend(to) || null,
+        flag: "include"
+    };
+    addFilter(["entryDate"], filterObj);
+  }
+
+  renderActiveFilters();
+  closeFilterMenu();
+  getAlumnis();
+}
+
+function renderActiveFilters() {
+  const filters = JSON.parse(localStorage.getItem("filters")) || blankFilters;
+  const container = document.getElementById("active-filters-list");
+  if (!container) return;
+
+  const tags = [];
+
+  (filters.gender || []).forEach(v => {
+      tags.push({ label: `Sex: ${v.gender}`, type: "gender", value: v });
+  });
+
+  (filters.studentNum || []).forEach(v => {
+      const start = v.start || '...';
+      const end = v.end || '...';
+      const label = start === end ? `${start}` : `${start} – ${end}`;
+      tags.push({ label: `Student No.: ${label}`, type: "studentNum", value: v });
+  });
+
+  (filters.entryDate || []).forEach(v => {
+      const formatForDisplay = (val) => {
+          if (!val) return '...';
+          const parts = val.split('-');
+          return parts.length >= 2 ? `${parts[1]}/${parts[0]}` : val;
+      };
+      
+      const start = formatForDisplay(v.start);
+      const end = formatForDisplay(v.end);
+      const label = start === end ? `${start}` : `${start} – ${end}`;
+      tags.push({ label: `Entry Date: ${label}`, type: "entryDate", value: v });
+  });
+
+  container.innerHTML = tags.map(t => `
+    <span class="filter-tag">
+      ${t.label}
+      <button onclick="removeFilter('${t.type}', '${encodeURIComponent(JSON.stringify(t.value))}')"
+              title="Remove filter">&#x2715;</button>
+    </span>`).join("");
+}
+
+function removeFilter(type, valueStr) {
+  // Decode the object we attached to the button
+  const valueObj = JSON.parse(decodeURIComponent(valueStr));
+  deleteFilter([type], valueObj);
+  renderActiveFilters();
+  getAlumnis();
+}
+
+function clearAllFilters() {
+  localStorage.setItem("filters", JSON.stringify(blankFilters));
+  renderActiveFilters();
+  closeFilterMenu();
+  getAlumnis();
+}
+
+// Close filter menu when clicking outside
+document.addEventListener("click", (e) => {
+  const wrapper = document.getElementById("filter-dropdown-wrapper");
+  if (wrapper && !wrapper.contains(e.target)) {
+    closeFilterMenu();
+  }
+});
+
+// Render any persisted filters on page load
+document.addEventListener("DOMContentLoaded", () => {
+  if (document.getElementById("filter-menu")) {
+    renderActiveFilters();
+  }
+});

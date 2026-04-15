@@ -300,3 +300,204 @@ main > div:first-child {
     font-size: 14px;
     color: #333;
 }
+
+/* Filter drop down */
+.filter-dropdown-wrapper {
+    position: relative; 
+    cursor: pointer;
+}
+
+.filter-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 200;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+    min-width: 210px;
+    padding: 6px 0 0 0;
+    font-family: 'Inter', Arial, Calibri, sans-serif;
+    font-size: 0.8rem;
+}
+
+.filter-menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    cursor: pointer;
+    color: #333;
+    transition: background 0.15s;
+}
+
+.filter-menu-item:hover {
+    background: #f3f3f3;
+}
+
+.filter-arrow {
+    font-size: 0.65rem;
+    color: #888;
+    transition: transform 0.2s;
+}
+
+.filter-arrow.open {
+    transform: rotate(90deg);
+}
+
+.filter-panel {
+    background: #f9f9f9;
+    border-top: 1px solid #ececec;
+    border-bottom: 1px solid #ececec;
+    padding: 10px 16px 8px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-radio {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: #333;
+}
+
+.filter-text-input {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-family: inherit;
+    background: #fff;
+}
+
+.filter-date-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-date-row .filter-text-input {
+    flex: 1;
+}
+
+.filter-date-sep {
+    color: #888;
+    font-size: 0.8rem;
+}
+
+.filter-panel-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.filter-cancel-btn {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.filter-apply-btn {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: none;
+    background: #02451C;
+    color: #fff;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.filter-apply-btn:hover { opacity: 0.9; }
+
+.active-filters-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 8px 12px 4px 12px;
+    min-height: 0;
+}
+
+.filter-tag {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #e8f0ec;
+    color: #02451C;
+    border-radius: 2rem;
+    padding: 3px 8px;
+    font-size: 0.7rem;
+}
+
+.filter-tag button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #02451C;
+    font-size: 0.7rem;
+    padding: 0;
+    line-height: 1;
+}
+
+.filter-menu-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 6px 12px 10px 12px;
+    border-top: 1px solid #ececec;
+    margin-top: 2px;
+}
+
+.filter-clear-btn {
+    background: none;
+    border: none;
+    color: #751518;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-family: inherit;
+    text-decoration: underline;
+    margin: auto;
+    text-decoration: none;
+}
+
+.filter-panel-flyout {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    min-width: 200px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+    border: none;
+    z-index: 210;
+    padding: 10px 16px 10px 16px;
+}
+
+.filter-menu {
+    position: absolute;
+}
+
+.filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: #333;
+    padding: 3px 0;
+}
+
+.filter-checkbox input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    accent-color: #02451C;
+}

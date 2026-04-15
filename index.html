@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="records.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <title>UPSE Alumni Information Management System</title>
 </head>
@@ -52,11 +52,74 @@
 
     <!-- Add filters -->
     <div class="filter-controls">
-        <div class="filter-dropdown">
-            <img src="assets/funnel.png" alt="" onclick="getAlumnis()"  >
-            <p>All</p>
-            <img src="assets/down.png" alt="">
+        <div id="filter-dropdown-wrapper" class="filter-dropdown-wrapper">
+            <div class="filter-dropdown" onclick="toggleFilterMenu()">
+                <img src="assets/funnel.png" alt="">
+                <p>All</p>
+                <img src="assets/down.png" alt="">
+            </div>
+
+            <div id="filter-menu" class="filter-menu" style="display:none;">
+
+                <!-- Sex -->
+                <div class="filter-menu-item" onclick="toggleFilterPanel('sex')">
+                    <span>Sex</span>
+                    <i class="fas fa-chevron-right filter-arrow" id="arrow-sex"></i>
+                </div>
+                <div id="panel-sex" class="filter-panel filter-panel-flyout" style="display:none;">
+                    <label class="filter-checkbox"><input type="checkbox" name="sex" value="F"> Female</label>
+                    <label class="filter-checkbox"><input type="checkbox" name="sex" value="M"> Male</label>
+                    <!-- <label class="filter-checkbox"><input type="checkbox" name="sex" value="N/A"> N/A</label> -->
+                    <div class="filter-panel-actions">
+                        <button class="filter-cancel-btn" onclick="closeFilterMenu()">Cancel</button>
+                        <button class="filter-apply-btn" onclick="applyFilter('sex')">Apply</button>
+                    </div>
+                </div>
+
+                <!-- Student Number -->
+                <div class="filter-menu-item" onclick="toggleFilterPanel('studentNum')">
+                    <span>Student Number</span>
+                    <i class="fas fa-chevron-right filter-arrow" id="arrow-studentNum"></i>
+                </div>
+                <div id="panel-studentNum" class="filter-panel filter-panel-flyout" style="display:none;">
+                    <div class="filter-date-row">
+                        <input type="text" id="filter-studentNum-from"
+                               placeholder="YYYY" class="filter-text-input">
+                        <span class="filter-date-sep">–</span>
+                        <input type="text" id="filter-studentNum-to"
+                               placeholder="YYYY" class="filter-text-input">
+                    </div>
+                    <div class="filter-panel-actions">
+                        <button class="filter-cancel-btn" onclick="closeFilterMenu()">Cancel</button>
+                        <button class="filter-apply-btn" onclick="applyFilter('studentNum')">Apply</button>
+                    </div>
+                </div>
+
+                <!-- Entry Date -->
+                <div class="filter-menu-item" onclick="toggleFilterPanel('entryDate')">
+                    <span>Entry Date</span>
+                    <i class="fas fa-chevron-right filter-arrow" id="arrow-entryDate"></i>
+                </div>
+                <div id="panel-entryDate" class="filter-panel filter-panel-flyout" style="display:none;">
+                    <div class="filter-date-row">
+                        <input type="text" id="filter-entryDate-from" placeholder="MM/YYYY" class="filter-text-input">
+                        <span class="filter-date-sep">–</span>
+                        <input type="text" id="filter-entryDate-to" placeholder="MM/YYYY" class="filter-text-input">
+                    </div>
+                    <div class="filter-panel-actions">
+                        <button class="filter-cancel-btn" onclick="closeFilterMenu()">Cancel</button>
+                        <button class="filter-apply-btn" onclick="applyFilter('entryDate')">Apply</button>
+                    </div>
+                </div>
+
+                <!-- Active filter tags + clear -->
+                <div id="active-filters-list" class="active-filters-list"></div>
+                <div class="filter-menu-footer">
+                    <button class="filter-clear-btn" onclick="clearAllFilters()">Clear All</button>
+                </div>
+            </div>
         </div>
+
         <div class="search-bar">
             <img src="assets/Search.png" alt="">
             <input type="text" placeholder="Search">
@@ -72,10 +135,10 @@
     <main>
         <div class="alumni-header">
             <input class="header-checkbox" type="checkbox">
-            <p data-testid = "sortLastName" onclick="getAlumnis('last_name')">Name</p>
-            <p data-testid = "sortGender" onclick="getAlumnis('gender')">Sex</p>
-            <p data-testid = "sortStudent_number" onclick="getAlumnis('student_number')">Student No.</p>
-            <p data-testid = "sortEntry_date" onclick="getAlumnis('entry_date')">Entry Date</p>
+            <p data-testid="sortLastName" onclick="getAlumnis('last_name')">Name</p>
+            <p data-testid="sortGender" onclick="getAlumnis('gender')">Sex</p>
+            <p data-testid="sortStudent_number" onclick="getAlumnis('student_number')">Student No.</p>
+            <p data-testid="sortEntry_date" onclick="getAlumnis('entry_date')">Entry Date</p>
             <p>Active Organizations</p>
             <p>Employment History</p>
             <p>Graduate Info</p>
@@ -256,4 +319,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>
