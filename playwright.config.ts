@@ -72,6 +72,7 @@ export default defineConfig({
     {
       name: 'backend',
       testMatch: [
+      /edit-records-backend.spec\.spec\.ts/,
       /recordsWithBackend\.spec\.ts/,
       ],
       use: { ...devices['Desktop Chrome'] },
