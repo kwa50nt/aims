@@ -7,7 +7,7 @@ test.describe('Edit Alumni Records', () => {
 
     await page.locator('label:has-text("First Name") + input').fill('Grad');
     await page.locator('label:has-text("Last Name") + input').fill('Test');
-    await page.locator('label:has-text("Sex Assigned at Birth") + input').fill('M');
+    await page.locator('label:has-text("Sex Assigned at Birth") + select').selectOption('Male');
     await page.locator('label:has-text("Student-Number") + input').fill('2023-12936');
     await page.locator('label:has-text("Email Address (Primary)") + input').fill('grad@test.com');
     await page.locator('label:has-text("Mobile Number (Primary)") + input').fill('9123456789');
