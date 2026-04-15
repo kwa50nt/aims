@@ -142,10 +142,11 @@ test.describe("Records Page Sorting function", () => {
       page,
     }) => {
       await page.getByTestId("sortLastName").click();
-
+      await expect(page.locator(".alumni-row")).toHaveCount(3);
       const row1 = page.locator(".alumni-row").nth(0);;
       const row2 = page.locator(".alumni-row").nth(1);
       const row3 = page.locator(".alumni-row").nth(2);
+
       await expect(row1.getByText("Jake Doe")).toBeVisible();
       await expect(row2.getByText("Jane Doe")).toBeVisible();
       await expect(row3.getByText("John Doe")).toBeVisible();
@@ -266,7 +267,7 @@ test.describe("Records - delete alumni ", () => {
     await page.waitForSelector(".alumni-row", { timeout: 10000 });
 
     //verify alumni has been added
-    const row1 = page.locator(".alumni-row").nth(0);;
+    const row1 = page.locator(".alumni-row").nth(0);
     await expect(row1.getByText("John Doe")).toBeVisible();
 
   });
