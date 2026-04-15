@@ -1,11 +1,12 @@
 const express = require("express");
 const { Pool } = require("pg");
 const cors = require("cors");
+const joinOp = " AND "
 
 const app = express();
 app.use(express.json());
 app.use(cors());
-const joinOp = " AND "
+
 function excelSerialToDate(serial) {
   if (!serial) return null;
 
@@ -36,8 +37,7 @@ function convertFlag(flag){
   }
 }
 
-function upsealumniWhereQuery(filter){
-  let res = "WHERE "
+function getAlumniWhereQuery(filter){
   let resFilters = [];
   console.log(filter)
   resFilters.push( filter["gender"].map( g =>
@@ -61,12 +61,14 @@ function upsealumniWhereQuery(filter){
     part += " BETWEEN \'" + ed["start"] + "\' AND \'" + ed["end"] +"\'"
     return part
   }).join(joinOp));
-
-  return resFilters.filter(x => x !== "").join(joinOp);
+  res = resFilters.filter(x => x !== "").join(joinOp);
+  if (res != ""){
+    res = "WHERE " + res;
+  }
+  return res;
 }
 
-function employmentWhereQuery(filter){
-  let res = "WHERE "
+function getEmploymentWhereQuery(filter){
   let resFilters = [];
   resFilters.push( filter["employment"].map( (g) => {
     let ret = "(employer " + convertFlag(g["flag"]) +" \'" + g["company"] + "\'" ;
@@ -81,21 +83,26 @@ function employmentWhereQuery(filter){
      }
      return ret + ")";
   }).join(joinOp));
-  
-  return resFilters.filter(x => x !== "").join(joinOp);
+  res = resFilters.filter(x => x !== "").join(joinOp);
+  if (res != ""){
+    res = "WHERE " + res;
+  }
+  return res;
 }
 
-function activeOrgsWhereQuery(filter){
-  let res = "WHERE "
+function getActiveOrgsWhereQuery(filter){
   let resFilters = [];
   resFilters.push( filter["activOrgs"].map( g =>
      "organization_name " + convertFlag(g["flag"]) +" \'" + g["org"] + "\'"
   ).join(joinOp));
-  
-  return resFilters.filter(x => x !== "").join(joinOp);
+  res = resFilters.filter(x => x !== "").join(joinOp);
+  if (res != ""){
+    res = "WHERE " + res;
+  }
+  return res;
 }
 
-function acadHistWhereQuery(filter){
+function getAcadHistWhereQuery(filter){
   let resFilters = [];
   const test = filter["acadHist"]["degreeAndUniv"];
   console.log(test);
@@ -128,8 +135,11 @@ function acadHistWhereQuery(filter){
     part += " BETWEEN " + ed["start"] + " AND " + ed["end"] 
     return part
   }).join(joinOp));
-
-  return resFilters.filter(x => x !== "").join(joinOp + "\n");
+  res = resFilters.filter(x => x !== "").join(joinOp);
+  if (res != ""){
+    res = "WHERE " + res;
+  }
+  return res;
 }
 const pool = new Pool({
   user: process.env.PGUSER || "postgres",
@@ -343,123 +353,141 @@ app.get("/get-alumnis", async (req, res) => {
       filters
     } = req.query;
     
-    let SQLQuery =  "SELECT * FROM upsealumni";
+    let alumniOrder = "";
 
     // create SQL query
     if (sortBy != "none"){
       if (sortBy == "last_name"){
-        SQLQuery = SQLQuery + " ORDER BY " + sortBy + " " + order + ", first_name " + order;
+        alumniOrder = "ORDER BY " + sortBy + " " + order + ", first_name " + order;
       }
       else{
-        SQLQuery = SQLQuery + " ORDER BY " + sortBy + " " + order + ", last_name " + order + ", first_name " + order;
+        alumniOrder = "ORDER BY " + sortBy + " " + order + ", last_name " + order + ", first_name " + order;
       }
     }
-
     console.log(filters)
     filter = JSON.parse(filters);
 
     console.log(filter)
-    let alumniWhereQuery = employmentWhereQuery(filter);
-    console.log(`employment \n ${alumniWhereQuery}`);
+    const alumniWhereQuery = getAlumniWhereQuery(filter);
+    console.log(`alumni \n ${alumniWhereQuery}`);
 
-    alumniWhereQuery = activeOrgsWhereQuery(filter);
-    console.log(`activeOrgs \n ${alumniWhereQuery}`);
+    const employmentWhereQuery = getEmploymentWhereQuery(filter);
+    console.log(`employment \n ${employmentWhereQuery}`);
 
-    alumniWhereQuery = acadHistWhereQuery(filter);
-    console.log(`acadHist \n ${alumniWhereQuery}`);
-    const test = await client.query(`
-  SELECT 
-    a.alumni_id,
-    a.student_number,
-    a.last_name,
-    a.first_name,
-    a.middle_name,
-    a.suffix,
-    a.gender,
-    a.entry_date,
-    a.current_email,
-    a.phone_number,
-    a.current_address,
-    a.academic_achievements,
+    const activeOrgWhereQuery = getActiveOrgsWhereQuery(filter);
+    console.log(`activeOrgs \n ${activeOrgWhereQuery}`);
 
-    -- ✅ Academic History JSON
-    COALESCE(
-        json_agg(
-            DISTINCT jsonb_build_object(
-                'graduation_id', ah.graduation_id,
-                'degree_name', ah.degree_name,
-                'granting_university', ah.granting_university,
-                'year_started', ah.year_started,
-                'semester_started', ah.semester_started,
-                'year_graduated', ah.year_graduated,
-                'semester_graduated', ah.semester_graduated,
-                'latin_honor', ah.latin_honor
-            )
-        ) FILTER (WHERE ah.graduation_id IS NOT NULL),
-        '[]'
-    ) AS academic_hist,
+    const acadHistWhereQuery = getAcadHistWhereQuery(filter);
+    console.log(`acadHist \n ${acadHistWhereQuery}`);
 
-    -- ✅ Employment History JSON
-    COALESCE(
-        json_agg(
-            DISTINCT jsonb_build_object(
-                'employment_id', eh.employment_id,
-                'employer', eh.employer,
-                'last_position_held', eh.last_position_held,
-                'start_date', eh.start_date,
-                'end_date', eh.end_date,
-                'is_current', eh.is_current
-            )
-        ) FILTER (WHERE eh.employment_id IS NOT NULL),
-        '[]'
-    ) AS employment_hist,
+    const alumniBase = `WITH alumni_base AS (
+    SELECT *
+    FROM upsealumni
+    ${alumniWhereQuery}),
+    `;
 
-    -- ✅ Active Organizations JSON
-    COALESCE(
-        json_agg(
-            DISTINCT jsonb_build_object(
-                'org_id', ao.org_id,
-                'organization_name', ao.organization_name
-            )
-        ) FILTER (WHERE ao.org_id IS NOT NULL),
-        '[]'
-    ) AS active_orgs
+    const acadHist = `acad_hist AS (
+    SELECT *
+    FROM academichistory
+    ${acadHistWhereQuery}),
+    `;
 
-FROM upsealumni a
+    const empHist = `emp_hist AS (
+    SELECT *
+    FROM employmenthistory
+    ${employmentWhereQuery}),
+    `;
 
-INNER JOIN academichistory ah 
-    ON a.alumni_id = ah.alumni_id
-    -- AND ah.degree_name = 'BS Computer Science'
+    const activeOrg = `active_org AS (
+    SELECT *
+    FROM activeorganizations
+    ${activeOrgWhereQuery})
+    `;
 
-INNER JOIN employmenthistory eh 
-    ON a.alumni_id = eh.alumni_id
-    -- AND eh.is_current = TRUE
+    const finalQuery = `
+    SELECT
+        a.alumni_id,
+        a.last_name,
+        a.first_name,
+        a.middle_name,
+        a.suffix,
+        a.gender,
+        a.student_number,
+        a.entry_date,
+        a.current_email,
+        a.phone_number,
+        a.current_address,
 
-INNER JOIN activeorganizations ao 
-    ON a.alumni_id = ao.alumni_id
-    -- AND ao.organization_name = 'Women in Tech PH'
+        COALESCE(
+            jsonb_agg(
+                DISTINCT jsonb_build_object(
+                    'graduation_id', ah.graduation_id,
+                    'degree_name', ah.degree_name,
+                    'granting_university', ah.granting_university,
+                    'year_started', ah.year_started,
+                    'semester_started', ah.semester_started,
+                    'year_graduated', ah.year_graduated,
+                    'semester_graduated', ah.semester_graduated,
+                    'latin_honor', ah.latin_honor
+                )
+            ) FILTER (WHERE ah.graduation_id IS NOT NULL),
+            '[]'
+        ) AS academic_hist,
 
-WHERE a.gender = 'F'
-GROUP BY 
-    a.alumni_id,
-    a.student_number,
-    a.last_name,
-    a.first_name,
-    a.middle_name,
-    a.suffix,
-    a.gender,
-    a.entry_date,
-    a.current_email,
-    a.phone_number,
-    a.current_address,
-    a.academic_achievements
-	
-ORDER BY a.last_name
-;`);
-  console.log(test.rows);
+        COALESCE(
+            jsonb_agg(
+                DISTINCT jsonb_build_object(
+                    'employment_id', eh.employment_id,
+                    'employer', eh.employer,
+                    'last_position_held', eh.last_position_held,
+                    'start_date', eh.start_date,
+                    'end_date', eh.end_date,
+                    'is_current', eh.is_current
+                )
+            ) FILTER (WHERE eh.employment_id IS NOT NULL),
+            '[]'
+        ) AS employment_hist,
+
+        COALESCE(
+            jsonb_agg(
+                DISTINCT jsonb_build_object(
+                    'org_id', ao.org_id,
+                    'organization_name', ao.organization_name
+                )
+            ) FILTER (WHERE ao.org_id IS NOT NULL),
+            '[]'
+        ) AS active_orgs
+
+    FROM alumni_base a
+    INNER JOIN acad_hist ah
+        ON a.alumni_id = ah.alumni_id
+    INNER JOIN emp_hist eh
+        ON a.alumni_id = eh.alumni_id
+    INNER JOIN active_org ao
+        ON a.alumni_id = ao.alumni_id
+
+    GROUP BY
+        a.alumni_id,
+        a.last_name,
+        a.first_name,
+        a.middle_name,
+        a.suffix,
+        a.gender,
+        a.student_number,
+        a.entry_date,
+        a.current_email,
+        a.phone_number,
+        a.current_address
+
+    ${alumniOrder}`;
+
+    // final query
+    console.log(alumniBase + acadHist + empHist + activeOrg + finalQuery)
+    const alumniDB = await client.query(alumniBase + acadHist + empHist + activeOrg + finalQuery)
+    console.log(alumniDB.rows);
 
     // send as JSON
-    res.json(test.rows);
+    res.json(alumniDB.rows);
 
   } catch (err) {
     res.status(500).json({ error: err.message });
