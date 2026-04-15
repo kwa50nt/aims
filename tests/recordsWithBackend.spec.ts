@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { mock } from "node:test";
 
 const mockAlumniData = {
   56: {
@@ -15,7 +14,7 @@ const mockAlumniData = {
     phone_number: "9123456789",
     current_address: null,
     account_id: 104,
-    academicHist: [
+    academic_hist: [
       {
         degree_name: "bs math",
         graduation_id: "2",
@@ -28,7 +27,7 @@ const mockAlumniData = {
         latin_honor: "magna_cum_laude",
       },
     ],
-    employmentHist: [
+    employment_hist: [
       {
         employment_id: "1",
         alumni_id: 56,
@@ -39,7 +38,7 @@ const mockAlumniData = {
         is_current: false,
       },
     ],
-    activeOrgs: [
+    active_orgs: [
       {organization_name:"cursor"}, 
       {organization_name:"cursor"},
       {organization_name:"csi"}],
@@ -57,7 +56,7 @@ const mockAlumniData = {
     phone_number: "9123456789",
     current_address: null,
     account_id: 105,
-    academicHist: [
+    academic_hist: [
       {
         degree_name: "BS Computer Science",
         granting_university: "UPD",
@@ -70,7 +69,7 @@ const mockAlumniData = {
         latin_honor: "summa_cum_laude",
       },
     ],
-    employmentHist: [
+    employment_hist: [
       {
         employment_id: "2",
         alumni_id: 57,
@@ -81,7 +80,7 @@ const mockAlumniData = {
         is_current: true,
       },
     ],
-    activeOrgs: [{organization_name:"csi"}],
+    active_orgs: [{organization_name:"csi"}],
   },
   58: {
     alumni_id: "58",
@@ -96,9 +95,9 @@ const mockAlumniData = {
     phone_number: "9123456789",
     current_address: null,
     account_id: 106,
-    academicHist: [],
-    employmentHist: [],
-    activeOrgs: [],
+    academic_hist: [],
+    employment_hist: [],
+    active_orgs: [],
   },
 };
 
