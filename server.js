@@ -354,6 +354,7 @@ app.get("/get-alumnis", async (req, res) => {
         SQLQuery = SQLQuery + " ORDER BY " + sortBy + " " + order + ", last_name " + order + ", first_name " + order;
       }
     }
+
     console.log(filters)
     filter = JSON.parse(filters);
 
@@ -366,44 +367,99 @@ app.get("/get-alumnis", async (req, res) => {
 
     alumniWhereQuery = acadHistWhereQuery(filter);
     console.log(`acadHist \n ${alumniWhereQuery}`);
-    // get rows
-    const alumnis = await client.query(SQLQuery);
-    const academicHistory = await client.query("SELECT * FROM academichistory");
-    const employmentHistory = await client.query("SELECT * FROM employmenthistory");
-    const activeOrganizations = await client.query("SELECT * FROM activeorganizations");
+    const test = await client.query(`
+  SELECT 
+    a.alumni_id,
+    a.student_number,
+    a.last_name,
+    a.first_name,
+    a.middle_name,
+    a.suffix,
+    a.gender,
+    a.entry_date,
+    a.current_email,
+    a.phone_number,
+    a.current_address,
+    a.academic_achievements,
 
-    // maps alumnis into a dictionary
-    const alumniDict = Object.fromEntries(
-      alumnis.rows.map((row, index) => [
-        row.alumni_id,
-        {
-          ...row,
-          academicHist: [],
-          employmentHist: [],
-          activeOrgs: [],
-          order: index
-        }
-      ])
-    );  
+    -- ✅ Academic History JSON
+    COALESCE(
+        json_agg(
+            DISTINCT jsonb_build_object(
+                'graduation_id', ah.graduation_id,
+                'degree_name', ah.degree_name,
+                'granting_university', ah.granting_university,
+                'year_started', ah.year_started,
+                'semester_started', ah.semester_started,
+                'year_graduated', ah.year_graduated,
+                'semester_graduated', ah.semester_graduated,
+                'latin_honor', ah.latin_honor
+            )
+        ) FILTER (WHERE ah.graduation_id IS NOT NULL),
+        '[]'
+    ) AS academic_hist,
 
-    academicHistory.rows.forEach(r => {
-      if (alumniDict[r.alumni_id]) alumniDict[r.alumni_id].academicHist.push(r);
-    });
-    employmentHistory.rows.forEach(r => {
-      if (alumniDict[r.alumni_id]) alumniDict[r.alumni_id].employmentHist.push(r);
-    });
-    activeOrganizations.rows.forEach(r => {
-      if (alumniDict[r.alumni_id]) alumniDict[r.alumni_id].activeOrgs.push(r.organization_name);
-    });
+    -- ✅ Employment History JSON
+    COALESCE(
+        json_agg(
+            DISTINCT jsonb_build_object(
+                'employment_id', eh.employment_id,
+                'employer', eh.employer,
+                'last_position_held', eh.last_position_held,
+                'start_date', eh.start_date,
+                'end_date', eh.end_date,
+                'is_current', eh.is_current
+            )
+        ) FILTER (WHERE eh.employment_id IS NOT NULL),
+        '[]'
+    ) AS employment_hist,
 
-    // preserves order
-    const orderedAlumniDict = Object.fromEntries(
-      alumnis.rows.map((row, index) => [
-        index,alumniDict[row.alumni_id]
-      ])
-    );
+    -- ✅ Active Organizations JSON
+    COALESCE(
+        json_agg(
+            DISTINCT jsonb_build_object(
+                'org_id', ao.org_id,
+                'organization_name', ao.organization_name
+            )
+        ) FILTER (WHERE ao.org_id IS NOT NULL),
+        '[]'
+    ) AS active_orgs
+
+FROM upsealumni a
+
+INNER JOIN academichistory ah 
+    ON a.alumni_id = ah.alumni_id
+    -- AND ah.degree_name = 'BS Computer Science'
+
+INNER JOIN employmenthistory eh 
+    ON a.alumni_id = eh.alumni_id
+    -- AND eh.is_current = TRUE
+
+INNER JOIN activeorganizations ao 
+    ON a.alumni_id = ao.alumni_id
+    -- AND ao.organization_name = 'Women in Tech PH'
+
+WHERE a.gender = 'F'
+GROUP BY 
+    a.alumni_id,
+    a.student_number,
+    a.last_name,
+    a.first_name,
+    a.middle_name,
+    a.suffix,
+    a.gender,
+    a.entry_date,
+    a.current_email,
+    a.phone_number,
+    a.current_address,
+    a.academic_achievements
+	
+ORDER BY a.last_name
+;`);
+  console.log(test.rows);
+
     // send as JSON
-    res.json(orderedAlumniDict);
+    res.json(test.rows);
 
   } catch (err) {
     res.status(500).json({ error: err.message });

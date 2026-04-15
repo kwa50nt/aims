@@ -85,30 +85,63 @@ function deleteFilter(path, filter){
   console.log("deleted value")
   return true
 }
-
 function filterTest(){
   filters = {
-    gender:[
+  gender: [],
+  studentNum: [],
+  entryDate: [],
+  employment:[
+    {
+      company: "Oracle Philippines",
+      isCurrent: "true",
+      flag: "exclude"
+    },
+    {
+      company: "Accenture",
+      isCurrent: "true",
+      flag: "exclude"
+    }
+  ],
+  activOrgs:[
+    {   
+      org: "IEEE Computer Society",
+      flag: "exclude"
+    },
+    {
+      org: "AWS User Group Philippines",
+      flag: "exclude"
+    }
+  ],
+  acadHist:{
+    degreeAndUniv:[
       {
-        gender:'F',
-        flag:"exclude"
+        degreeName: "BS Computer Engineering",
+        univName: "Mapua University",
+        flag: "exclude"
+      },
+      {
+        degreeName: "BS Computer Science",
+        univName: "University of the Philippines",
+        flag: "exclude"
       }
     ],
-    studentNum:[
-      {
-        start:2020,
-        end:2025,
-        flag:"exclude"
-      }
+    dateStart:[
+      
     ],
-    entryDate:[
+    gradDate:[
       {
-        start:'2020-2-2',
-        end:'2025-2-2',
-        flag:"exclude"
+        start: "2015",
+        end: "2020",
+        flag: "exclude"
+      },
+      {
+        start: "2021",
+        end: "2022",
+        flag: "exclude"
       }
     ]
   }
+}
   getAlumnis("none", filters);
 }
 
@@ -422,11 +455,7 @@ let sortOrder = {
   "student_number" : "asc",
   "entry_date" : "asc"
 }
-async function getAlumnis(sortBy = "none", filters ={
-  gender:[],
-  studentNum:[],
-  entryDate:[]
-}){
+async function getAlumnis(sortBy = "none", filters =blankFilters){
   try {
     // frontend: comment out the fetching and result of fetching para di mag error sainyo
     // fetching the server
@@ -451,7 +480,7 @@ async function getAlumnis(sortBy = "none", filters ={
     
     // result of fetching
     const fetched = await response.json();
-    console.log(JSON.stringify(fetched));
+    console.log(fetched); 
     renderAlumniTable(fetched);
   }
   catch (err){
@@ -517,7 +546,7 @@ function renderAlumniRow(alumni) {
   const fullName = [alumni.first_name, alumni.middle_name, alumni.last_name, alumni.suffix].filter(Boolean).join(" ");
 
   // Organizations
-  const orgsHTML = (alumni.activeOrgs || []).map(org => {
+  const orgsHTML = (alumni.active_orgs || []).map(org => {
     const name = typeof org === "object" ? org.organization_name : org;
     return `
       <div class="mini-info">
@@ -527,7 +556,7 @@ function renderAlumniRow(alumni) {
   }).join("") || "<p>—</p>";
 
   // Employment
-  const employments = alumni.employmentHist || [];
+  const employments = alumni.employment_hist || [];
   const sorted = [...employments].sort((a, b) => b.is_current - a.is_current);
   const empHTML = sorted.map(emp => `
     <div class="employment-entry">
@@ -551,7 +580,7 @@ function renderAlumniRow(alumni) {
     : `<div class="emp-entries">${empHTML}</div>`;
 
   // Graduation info
-  const gradInfos = alumni.academicHist || [];
+  const gradInfos = alumni.academic_hist || [];
 
   const gradHTML = gradInfos.map((g, i) => {
     const degree = g.degree_name ? (typeof g.degree_name === "object" ? g.degree_name : g.degree_name) : null;
