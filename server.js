@@ -2,6 +2,8 @@ const express = require("express");
 const { Pool } = require("pg");
 const cors = require("cors");
 const joinOp = " AND "
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
   const colNames ={
     last_name: "last_name",
@@ -41,6 +43,7 @@ const joinOp = " AND "
     employment_hist: "employment_id",
     active_orgs: "org_id",
   }
+  const JWT_SECRET = process.env.JWT_SECRET || "change_me_in_prod";
 
 const app = express();
 app.use(express.json());
@@ -296,6 +299,19 @@ function parseInsertQuery(tName, data, alumni_id){
   return {insertQuery, valArr};
 }
 
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // "Bearer <token>"
+ 
+  if (!token) return res.status(401).json({ error: "No token provided." });
+ 
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: "Invalid or expired token." });
+    req.user = user;
+    next();
+  });
+}
+
 app.post("/add-alumni", async (req, res) => {
   const {
     email,
@@ -478,7 +494,10 @@ app.delete("/delete-alumni/:id", async (req, res) => {
     
     webID = await client.query("SELECT account_id FROM upsealumni WHERE alumni_id = $1", [id]);
     await client.query("DELETE FROM upsealumni WHERE alumni_id = $1", [id]);
-    await client.query("DELETE FROM webaccount WHERE account_id = $1", [webID.rows[0].account_id]);
+    if (webID.rows[0]?.account_id) {
+      await client.query("DELETE FROM webaccount WHERE account_id = $1", 
+        [webID.rows[0].account_id]);
+}
 
     await client.query("COMMIT");
 
@@ -491,6 +510,7 @@ app.delete("/delete-alumni/:id", async (req, res) => {
     client.release();
   }
 });
+
 app.get("/get-alumnis", async (req, res) => {
   const client = await pool.connect();
   try {
@@ -641,6 +661,10 @@ app.get("/get-alumnis", async (req, res) => {
   } finally {
     client.release();
   }
+});
+
+app.get("/me", authenticateToken, (req, res) => {
+  res.json({ user: req.user });
 });
 
 const portNumber = 3001;
@@ -840,4 +864,129 @@ app.post("/update-alumni", async (req, res) => {
     client.release();
   }
 
+});
+
+app.post("/register", async (req, res) => {
+  const { email, password } = req.body;
+ 
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password are required." });
+  }
+ 
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+ 
+    // Check alumni record exists with this email
+    const alumniResult = await client.query(
+      "SELECT alumni_id, account_id FROM upsealumni WHERE current_email = $1",
+      [email]
+    );
+ 
+    if (alumniResult.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({
+        error: "No alumni record found with that email. Please contact your administrator.",
+      });
+    }
+ 
+    const { alumni_id, account_id } = alumniResult.rows[0];
+ 
+    // Prevent double registration
+    if (account_id !== null) {
+      await client.query("ROLLBACK");
+      return res.status(409).json({ error: "An account already exists for this email." });
+    }
+ 
+    // Get or create the Alumni role
+    let role_id;
+    const roleResult = await client.query(
+      "SELECT role_id FROM userrole WHERE role_name = $1",
+      ["Alumni"]
+    );
+    if (roleResult.rows.length === 0) {
+      const newRole = await client.query(
+        "INSERT INTO userrole (role_name) VALUES ($1) RETURNING role_id",
+        ["Alumni"]
+      );
+      role_id = newRole.rows[0].role_id;
+    } else {
+      role_id = roleResult.rows[0].role_id;
+    }
+ 
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+ 
+    // Create the webaccount
+    const accountResult = await client.query(
+      `INSERT INTO webaccount (email, password, role_id)
+       VALUES ($1, $2, $3)
+       RETURNING account_id`,
+      [email, hashedPassword, role_id]
+    );
+    const new_account_id = accountResult.rows[0].account_id;
+ 
+    // Link account back to alumni record
+    await client.query(
+      "UPDATE upsealumni SET account_id = $1 WHERE alumni_id = $2",
+      [new_account_id, alumni_id]
+    );
+ 
+    await client.query("COMMIT");
+    res.json({ message: "Account created successfully." });
+ 
+  } catch (err) {
+    await client.query("ROLLBACK");
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+ 
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password are required." });
+  }
+ 
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      `SELECT w.account_id, w.email, w.password, r.role_name
+       FROM webaccount w
+       JOIN userrole r ON w.role_id = r.role_id
+       WHERE w.email = $1`,
+      [email]
+    );
+ 
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: "Invalid email or password." });
+    }
+ 
+    const account = result.rows[0];
+ 
+    const passwordMatch = await bcrypt.compare(password, account.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: "Invalid email or password." });
+    }
+ 
+    // Sign a JWT with account info, expires in 8 hours
+    const token = jwt.sign(
+      {
+        account_id: account.account_id,
+        email: account.email,
+        role: account.role_name,
+      },
+      JWT_SECRET,
+      { expiresIn: "8h" }
+    );
+ 
+    res.json({ token });
+ 
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
 });
