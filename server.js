@@ -3,6 +3,45 @@ const { Pool } = require("pg");
 const cors = require("cors");
 const joinOp = " AND "
 
+  const colNames ={
+    last_name: "last_name",
+    first_name: "first_name",
+    middle_name: "middle_name",
+    suffix: "suffix",
+    gender: "gender",
+    student_number: "student_number",
+    entry_date: "entry_date",
+    current_email: "current_email",
+    phone_number: "phone_number",
+    current_address: "current_address",
+    academic_achievements: "academic_achievements",
+    degree_name: "degree_name",
+    latin_honor: "latin_honor",
+    year_started: "year_started",
+    year_graduated: "year_graduated",
+    semester_started: "semester_started",
+    semester_graduated: "semester_graduated",
+    granting_university: "granting_university",
+    employer: "employer",
+    end_date: "end_date",
+    is_current: "is_current",
+    start_date: "start_date",
+    last_position_held: "last_position_held",
+    organization_name: "organization_name"
+  }
+  const tableName = {
+    alumni_info: "upsealumni",
+    academic_hist: "academichistory",
+    employment_hist: "employmenthistory",
+    active_orgs: "activeorganizations",
+  }
+  const idName = {
+    alumni_info: "alumni_id",
+    academic_hist: "graduation_id",
+    employment_hist: "employment_id",
+    active_orgs: "org_id",
+  }
+
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -148,6 +187,114 @@ const pool = new Pool({
   password: process.env.PGPASSWORD || "password",
   port: process.env.PGPORT ? parseInt(process.env.PGPORT) : 5432,
 });
+function parseInsertQuery(tName, data, alumni_id){
+
+  let insertQuery = ""; 
+  let valArr = []; 
+  if (tName == "academichistory"){
+    try{
+      insertQuery =  `
+      INSERT INTO academicHistory
+        (
+          alumni_id, 
+          degree_name,
+          year_started, 
+          semester_started, 
+          year_graduated, 
+          semester_graduated, 
+          latin_honor,
+          granting_university
+          )
+
+        VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8
+        )
+        RETURNING *`;
+        valArr = [
+            alumni_id,
+            data.degree_name,
+            data.year_started,
+            data.semester_started,
+            data.year_graduated,
+            data.semester_graduated,
+            data.latin_honor,
+            data.granting_university]
+    }
+    catch(err){
+      console.log(`Error parsing academic history insert into \n `,err);
+    }
+    
+  }
+  else if (tName == "employmenthistory"){
+    try{
+      insertQuery =  `
+      INSERT INTO employmenthistory
+        (
+          alumni_id, 
+          employer, 
+          last_position_held, 
+          start_date, 
+          end_date, 
+          is_current
+          )
+
+        VALUES (
+          $1,
+          $2,
+          $3,
+          $4,
+          $5,
+          $6
+        )
+        RETURNING *`;
+      valArr = [
+        alumni_id,
+        data.employer,
+        data.last_position_held,
+        data.start_date,
+        data.end_date,
+        data.is_current
+      ]
+    }
+    
+    catch(err){
+      console.log(`Error parsing employment history insert into \n `,err);
+    }
+    
+  }
+  else if (tName == "activeorganizations"){
+    try{
+      insertQuery = `
+      INSERT INTO activeorganizations
+        (
+          alumni_id, 
+          organization_name
+          )
+
+        VALUES (
+        $1,
+        $2
+        )
+        RETURNING *`;
+      valArr = [
+        alumni_id,
+        data.organization_name
+      ]
+    }
+    catch(err){
+      console.log(`Error parsing active organization insert into \n `,err);
+    }
+  }
+  console.log(insertQuery,valArr );
+  return {insertQuery, valArr};
+}
 
 app.post("/add-alumni", async (req, res) => {
   const {
@@ -585,4 +732,112 @@ app.post("/upload-excel", upload.single("file"), async (req, res) => {
     client.release();
   }
 });
+app.post("/update-alumni", async (req, res) => {
+  const {
+    alumni_info,
+    academic_hist,
+    employment_hist,
+    active_orgs
+  } = req.body;
+  const aeo = {
+    academic_hist,
+    employment_hist,
+    active_orgs
+  };
+  console.log("============================updating alumni============================");
 
+  const client = await pool.connect();
+  console.log(req.body);
+  try {
+    let resQuery;
+    await client.query("BEGIN");
+    if (alumni_info != null){
+      for (const [k,v] of Object.entries(alumni_info)){
+        console.log(k, v);
+        if (k == 'alumni_id') continue;
+        console.log(`
+          UPDATE ${tableName.alumni_info}
+          SET ${colNames[k]} = $1
+          WHERE alumni_id = $2
+          `,[
+            v,
+            alumni_info.alumni_id
+          ])
+        resQuery = await client.query(`
+          UPDATE ${tableName.alumni_info}
+          SET ${colNames[k]} = $1
+          WHERE alumni_id = $2
+          `,[
+            v,
+            alumni_info.alumni_id
+          ])
+        console.log(resQuery);
+      }
+    }
+    
+    for (const [table, arr] of Object.entries(aeo)){
+      if (arr == null) continue;
+      for (const elem of arr){
+        const idStr = idName[table];
+        const idNum = elem[idStr];
+        const tableToEdit = tableName[table];
+        if (idNum >= 0){
+          for (const [k,v] of Object.entries(elem)){
+            if (k == idStr) continue;
+              console.log(`
+                UPDATE ${tableToEdit}
+                SET ${colNames[k]} = $1
+                WHERE ${idStr} = $2
+                `, [
+                  v,
+                  idNum
+                ]);
+              resQuery = await client.query(`
+                UPDATE ${tableToEdit}
+                SET ${colNames[k]} = $1
+                WHERE ${idStr} = $2
+                `, [
+                  v,
+                  idNum
+                ]);
+            console.log(resQuery);
+          }            
+        }
+        else if (idNum == -1){
+          const {insertQuery, valArr} = parseInsertQuery(tableToEdit, elem, alumni_info.alumni_id);
+          console.log(insertQuery, valArr);
+          if (insertQuery != ""){
+            resQuery = await client.query(insertQuery, valArr);
+            console.log(resQuery);
+          }
+        }
+        else if (idNum == -2){
+          console.log(`
+            DELETE FROM ${tableToEdit}
+            WHERE ${idStr} = $1
+            `,
+            [
+             elem.idToDelete 
+            ]);
+          resQuery = await client.query(`
+            DELETE FROM ${tableToEdit}
+            WHERE ${idStr} = $1
+            `,
+            [
+             elem.idToDelete 
+            ]);
+          console.log(resQuery);
+        }
+      }
+    }
+
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    res.status(500).json({ error: err.message });
+
+  } finally {
+    client.release();
+  }
+
+});

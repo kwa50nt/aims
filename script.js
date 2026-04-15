@@ -222,7 +222,44 @@ function formatMonthYearToDate(input) {
 
   return `${year}-${month}-01`;
 }
-
+async function updateAlumni(data) {
+  // const data = {
+  //   alumni_info:{
+  //     alumni_id: 2424,
+  //     last_name: "cccccccc",
+  //   },
+  //   academic_hist: [
+  //     {
+  //       "degree_name": "BS IT", 
+  //       "latin_honor": "cum_laude", 
+  //       "year_started": 2013, 
+  //       "graduation_id": -1, 
+  //       "year_graduated": 2017, 
+  //       "semester_started": 1, 
+  //       "semester_graduated": 2, 
+  //       "granting_university": "University of the Philippines"
+  //     }
+  //   ],
+  //   employment_hist: [
+  //   ],
+  //   active_orgs:null
+  // };
+  try {
+    const response = await fetch(
+      `http://localhost:${portNumberBackEnd}/update-alumni`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      },
+    );
+    const fetched = await response.json();
+    console.log("Server Response:", fetched);
+    
+  } catch (err) {
+    console.log("error updating alumni:", err);
+  }
+}
 async function addAlumni() {
   const form = document.querySelector(".alumni-form");
 
@@ -504,6 +541,7 @@ async function getAlumnis(sortBy = "none"){
     console.log("error getting alumni:", err);
     document.getElementById("alumni-table-body").innerHTML = `<p class="no-records">Failed to load alumni records. Please try again.</p>`;
   }
+  updateAlumni();
 }
 
 async function uploadExcel() {
