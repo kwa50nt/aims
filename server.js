@@ -5,7 +5,7 @@ const cors = require("cors");
 const app = express();
 app.use(express.json());
 app.use(cors());
-
+const joinOp = " AND "
 function excelSerialToDate(serial) {
   if (!serial) return null;
 
@@ -27,7 +27,110 @@ function excelSerialToDate(serial) {
 
   return `${year}-${month}-${day}`;
 }
+function convertFlag(flag){
+  if (flag == "include"){
+    return "=";
+  }
+  else if (flag == "exclude"){
+    return "!=";
+  }
+}
 
+function upsealumniWhereQuery(filter){
+  let res = "WHERE "
+  let resFilters = [];
+  console.log(filter)
+  resFilters.push( filter["gender"].map( g =>
+     "gender " + convertFlag(g["flag"]) +" \'" + g["gender"] + "\'"
+  ).join(joinOp));
+  
+  resFilters.push(filter["studentNum"].map(sn => {
+    let part = "CAST(LEFT(student_number, 4) AS INT) "
+    if (sn["flag"] == "exclude"){
+      part += " NOT"
+    }
+    part += " BETWEEN " + sn["start"] + " AND " + sn["end"]
+    return part
+  }).join(joinOp));
+
+  resFilters.push(filter["entryDate"].map(ed => {
+    let part = "entry_date"
+    if (ed["flag"] == "exclude"){
+      part += " NOT"
+    }
+    part += " BETWEEN \'" + ed["start"] + "\' AND \'" + ed["end"] +"\'"
+    return part
+  }).join(joinOp));
+
+  return resFilters.filter(x => x !== "").join(joinOp);
+}
+
+function employmentWhereQuery(filter){
+  let res = "WHERE "
+  let resFilters = [];
+  resFilters.push( filter["employment"].map( (g) => {
+    let ret = "(employer " + convertFlag(g["flag"]) +" \'" + g["company"] + "\'" ;
+     if (g["isCurrent"] != "null"){
+      if (g["flag"] == "include"){
+        ret += " AND ";
+      }
+      else if (g["flag"] == "exclude"){
+        ret += " OR ";
+      }
+      ret += "is_current" + convertFlag(g["flag"]) + " " + g["isCurrent"];
+     }
+     return ret + ")";
+  }).join(joinOp));
+  
+  return resFilters.filter(x => x !== "").join(joinOp);
+}
+
+function activeOrgsWhereQuery(filter){
+  let res = "WHERE "
+  let resFilters = [];
+  resFilters.push( filter["activOrgs"].map( g =>
+     "organization_name " + convertFlag(g["flag"]) +" \'" + g["org"] + "\'"
+  ).join(joinOp));
+  
+  return resFilters.filter(x => x !== "").join(joinOp);
+}
+
+function acadHistWhereQuery(filter){
+  let resFilters = [];
+  const test = filter["acadHist"]["degreeAndUniv"];
+  console.log(test);
+  resFilters.push( filter["acadHist"]["degreeAndUniv"].map( (g) =>{
+    let ret = "(degree_name " + convertFlag(g["flag"]) +" \'" + g["degreeName"] + "\'";
+    if (g["flag"] == "include"){
+        ret += " AND ";
+      }
+      else if (g["flag"] == "exclude"){
+        ret += " OR ";
+      }
+      ret += "granting_university " + convertFlag(g["flag"]) +" \'" + g["univName"] + "\')";
+      return ret;
+  }).join(joinOp));
+  
+  resFilters.push(filter["acadHist"]["dateStart"].map(ed => {
+    let part = "year_started"
+    if (ed["flag"] == "exclude"){
+      part += " NOT"
+    }
+    part += " BETWEEN " + ed["start"] + " AND " + ed["end"]
+    return part
+  }).join(joinOp));
+
+  resFilters.push(filter["acadHist"]["gradDate"].map(ed => {
+    let part = "year_graduated"
+    if (ed["flag"] == "exclude"){
+      part += " NOT"
+    }
+    part += " BETWEEN " + ed["start"] + " AND " + ed["end"] 
+    return part
+  }).join(joinOp));
+
+  return resFilters.filter(x => x !== "").join(joinOp + "\n");
+}
 const pool = new Pool({
   user: process.env.PGUSER || "postgres",
   host: process.env.PGHOST || "localhost",
@@ -236,10 +339,13 @@ app.get("/get-alumnis", async (req, res) => {
   try {
     const { 
       sortBy = "none", 
-      order = "none" } = req.query;
+      order = "none",
+      filters
+    } = req.query;
     
     let SQLQuery =  "SELECT * FROM upsealumni";
-    console.log(sortBy, order);
+
+    // create SQL query
     if (sortBy != "none"){
       if (sortBy == "last_name"){
         SQLQuery = SQLQuery + " ORDER BY " + sortBy + " " + order + ", first_name " + order;
@@ -248,12 +354,25 @@ app.get("/get-alumnis", async (req, res) => {
         SQLQuery = SQLQuery + " ORDER BY " + sortBy + " " + order + ", last_name " + order + ", first_name " + order;
       }
     }
+    console.log(filters)
+    filter = JSON.parse(filters);
 
+    console.log(filter)
+    let alumniWhereQuery = employmentWhereQuery(filter);
+    console.log(`employment \n ${alumniWhereQuery}`);
+
+    alumniWhereQuery = activeOrgsWhereQuery(filter);
+    console.log(`activeOrgs \n ${alumniWhereQuery}`);
+
+    alumniWhereQuery = acadHistWhereQuery(filter);
+    console.log(`acadHist \n ${alumniWhereQuery}`);
+    // get rows
     const alumnis = await client.query(SQLQuery);
     const academicHistory = await client.query("SELECT * FROM academichistory");
     const employmentHistory = await client.query("SELECT * FROM employmenthistory");
     const activeOrganizations = await client.query("SELECT * FROM activeorganizations");
-    console.log(alumnis);
+
+    // maps alumnis into a dictionary
     const alumniDict = Object.fromEntries(
       alumnis.rows.map((row, index) => [
         row.alumni_id,
@@ -265,7 +384,7 @@ app.get("/get-alumnis", async (req, res) => {
           order: index
         }
       ])
-    );
+    );  
 
     academicHistory.rows.forEach(r => {
       if (alumniDict[r.alumni_id]) alumniDict[r.alumni_id].academicHist.push(r);
@@ -277,6 +396,7 @@ app.get("/get-alumnis", async (req, res) => {
       if (alumniDict[r.alumni_id]) alumniDict[r.alumni_id].activeOrgs.push(r.organization_name);
     });
 
+    // preserves order
     const orderedAlumniDict = Object.fromEntries(
       alumnis.rows.map((row, index) => [
         index,alumniDict[row.alumni_id]
@@ -299,6 +419,7 @@ app.listen(3001, () => {
 
 const multer = require("multer");
 const XLSX = require("xlsx");
+const { start } = require("node:repl");
 
 const upload = multer({ storage: multer.memoryStorage() });
 
