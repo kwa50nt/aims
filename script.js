@@ -499,6 +499,7 @@ async function getAlumnis(sortBy = "none", filters = null){
     });
     
     const fetched = await response.json();
+    console.log(fetched);
     renderAlumniTable(fetched);
   }
   catch (err){
@@ -571,7 +572,7 @@ function renderAlumniRow(alumni) {
     .join(" ");
 
   const orgsHTML =
-    (alumni.activeOrgs || [])
+    (alumni.active_orgs || [])
       .map((org) => {
         const name = typeof org === "object" ? org.organization_name : org;
         return `
@@ -582,7 +583,7 @@ function renderAlumniRow(alumni) {
       })
       .join("") || "<p>—</p>";
 
-  const employments = alumni.employmentHist || [];
+  const employments = alumni.employment_hist || [];
   const sorted = [...employments].sort((a, b) => b.is_current - a.is_current);
   const empHTML =
     sorted
@@ -611,7 +612,7 @@ function renderAlumniRow(alumni) {
        <div class="emp-entries collapsed">${empHTML}</div>`
       : `<div class="emp-entries">${empHTML}</div>`;
 
-  const gradInfos = alumni.academicHist || [];
+  const gradInfos = alumni.academic_hist || [];
 
   const gradHTML =
     gradInfos
