@@ -755,6 +755,13 @@ app.post("/update-alumni", async (req, res) => {
       for (const [k,v] of Object.entries(alumni_info)){
         console.log(k, v);
         if (k == 'alumni_id') continue;
+
+        // SAFETY CHECK: Skip fields that don't exist in the database schema
+        if (!colNames[k]) {
+            console.log(`Skipping unsupported field: ${k}`);
+            continue;
+        }
+
         console.log(`
           UPDATE ${tableName.alumni_info}
           SET ${colNames[k]} = $1

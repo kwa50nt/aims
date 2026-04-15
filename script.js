@@ -1,4 +1,7 @@
 const portNumberBackEnd = 3001;
+
+// Cache of loaded alumni objects keyed by alumni_id, used by editAlumni()
+const alumniCache = {};
 const blankFilters = {
   gender: [],
   studentNum: [],
@@ -222,6 +225,7 @@ function formatMonthYearToDate(input) {
 
   return `${year}-${month}-01`;
 }
+
 async function updateAlumni(data) {
   // const data = {
   //   alumni_info:{
@@ -260,6 +264,7 @@ async function updateAlumni(data) {
     console.log("error updating alumni:", err);
   }
 }
+
 async function addAlumni() {
   const form = document.querySelector(".alumni-form");
 
@@ -541,7 +546,6 @@ async function getAlumnis(sortBy = "none"){
     console.log("error getting alumni:", err);
     document.getElementById("alumni-table-body").innerHTML = `<p class="no-records">Failed to load alumni records. Please try again.</p>`;
   }
-  updateAlumni();
 }
 
 async function uploadExcel() {
@@ -593,6 +597,7 @@ function renderAlumniTable(alumniData) {
   }
 
   entries.forEach((alumni) => {
+    alumniCache[alumni.alumni_id] = alumni;
     main.appendChild(renderAlumniRow(alumni));
   });
 }
@@ -692,7 +697,7 @@ function renderAlumniRow(alumni) {
     <div class="work-cell">${workCellHTML}</div>
     <div class="grad-cell">${gradHTML}</div>
     <div class="action-cell">
-      <a href="edit-records.html"><img src="assets/edit.png" alt="Edit"></a>
+      <img src="assets/edit.png" alt="Edit" style="cursor:pointer;" onclick="editAlumni('${alumni.alumni_id}')">
       <img src="assets/trash.png" alt="Delete" onclick="deleteAlumni('${alumni.alumni_id}')">
     </div>
   `;
@@ -1040,4 +1045,402 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("filter-menu")) {
     renderActiveFilters();
   }
+});
+
+// EDIT RECORDS
+
+function editAlumni(alumniId) {
+  const alumni = alumniCache[alumniId];
+  if (!alumni) {
+    alert("Could not load alumni data. Please reload the page.");
+    return;
+  }
+  sessionStorage.setItem("editAlumni", JSON.stringify(alumni));
+  window.location.href = "edit-records.html";
+}
+
+// ── Pre-fill helpers ─────────────────────────────────────────────
+
+function toMMYYYY(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  return String(d.getMonth() + 1).padStart(2, "0") + "/" + d.getFullYear();
+}
+
+function makeSemYearLabel(sem, year) {
+  if (!sem && !year) return "";
+  const semStr = sem === 1 ? "1st" : sem === 2 ? "2nd" : sem === 3 ? "Mid" : "";
+  return semStr && year ? `${semStr} Sem, ${year}` : (semStr || String(year) || "");
+}
+
+function escHtml(str) {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;").replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// Builds an org row pre-filled with a value (and optional org_id stored as data attr)
+function buildOrgRow(orgName = "", orgId = null) {
+  const div = document.createElement("div");
+  div.className = "organization-row";
+  if (orgId !== null) div.dataset.orgId = orgId;
+  div.innerHTML = `
+    <div>
+      <label>Organization</label>
+      <input type="text" placeholder="Organization" value="${escHtml(orgName)}">
+    </div>
+    <button type="button" class="circle-btn minus" onclick="removeRow(this)">
+      <i class="fas fa-minus"></i>
+    </button>`;
+  return div;
+}
+
+function buildEmploymentRow(emp = {}) {
+  const start = toMMYYYY(emp.start_date || "");
+  const end   = emp.is_current ? "Present" : toMMYYYY(emp.end_date || "");
+  const div = document.createElement("div");
+  div.className = "employment-row";
+  if (emp.employment_id != null) div.dataset.employmentId = emp.employment_id;
+  div.innerHTML = `
+    <div>
+      <label>Employer</label>
+      <input type="text" placeholder="e.g. Google, Inc." value="${escHtml(emp.employer || "")}">
+    </div>
+    <div>
+      <label>Last Position Held</label>
+      <input type="text" placeholder="e.g. Head Software Engineer" value="${escHtml(emp.last_position_held || "")}">
+    </div>
+    <div>
+      <label>Start of Employment</label>
+      <input type="text" placeholder="MM/YYYY" value="${escHtml(start)}">
+    </div>
+    <div>
+      <label>End of Employment</label>
+      <input type="text" placeholder="MM/YYYY" value="${escHtml(end)}">
+    </div>
+    <button type="button" class="circle-btn minus" onclick="removeRow(this)">
+      <i class="fas fa-minus"></i>
+    </button>`;
+  return div;
+}
+
+function buildGraduateRow(g = {}, degName = "") {
+  const gradYear   = makeSemYearLabel(g.semester_graduated, g.year_graduated);
+  const startLabel = makeSemYearLabel(g.semester_started,   g.year_started);
+
+  // Map snake_case DB value back to select option text
+  const honorMap = {
+    "cum_laude": "Cum Laude", "magna_cum_laude": "Magna Cum Laude",
+    "summa_cum_laude": "Summa Cum Laude",
+    "Cum Laude": "Cum Laude", "Magna Cum Laude": "Magna Cum Laude",
+    "Summa Cum Laude": "Summa Cum Laude",
+  };
+  const honor = honorMap[g.latin_honor || ""] || "";
+
+  const honorOptions = ["N/A", "Cum Laude", "Magna Cum Laude", "Summa Cum Laude"]
+    .map(o => `<option value="${o}" ${honor === o ? "selected" : ""}>${o}</option>`)
+    .join("");
+
+  const div = document.createElement("div");
+  div.className = "graduate-row";
+  if (g.graduation_id != null) div.dataset.graduationId = g.graduation_id;
+  div.innerHTML = `
+    <div>
+      <label>Degree</label>
+      <input type="text" placeholder="BS Economics" value="${escHtml(degName)}">
+      <small class="input-hint">*Don't abbreviate your academic program</small>
+    </div>
+    <div>
+      <label>Latin Honors</label>
+      <select class="latin-honors" required>
+        <option value="" disabled ${!honor ? "selected hidden" : ""}>Select...</option>
+        ${honorOptions}
+      </select>
+    </div>
+    <div>
+      <label>University Studied</label>
+      <input type="text" placeholder="e.g. University of the Philippines"
+             value="${escHtml(g.granting_university || "")}">
+    </div>
+    <div>
+      <label>Year and Semester Started</label>
+      <input type="text" placeholder="1st Sem, 2026" value="${escHtml(startLabel)}">
+    </div>
+    <div>
+      <label>Year and Semester Graduated</label>
+      <input type="text" placeholder="2nd Sem, 2030" value="${escHtml(gradYear)}">
+    </div>
+    <button type="button" class="circle-btn minus" onclick="removeRow(this)">
+      <i class="fas fa-minus"></i>
+    </button>`;
+  return div;
+}
+
+// ── Pre-fill the edit form from sessionStorage ───────────────────
+
+function prefillEditForm() {
+  const raw = sessionStorage.getItem("editAlumni");
+  if (!raw) {
+    alert("No alumni data found. Returning to records.");
+    window.location.href = "index.html";
+    return;
+  }
+
+  const a = JSON.parse(raw);
+  const form = document.querySelector(".alumni-form");
+  const getInput = (ph) => form.querySelector(`input[placeholder="${ph}"]`);
+
+  // Basic fields
+  if (getInput("First Name"))     getInput("First Name").value     = a.first_name      || "";
+  if (getInput("Last Name"))      getInput("Last Name").value      = a.last_name        || "";
+  if (getInput("M.I."))           getInput("M.I.").value           = a.middle_name      || "";
+  if (getInput("Jr., III, etc.")) getInput("Jr., III, etc.").value = a.suffix           || "";
+  if (getInput("Maiden Name"))    getInput("Maiden Name").value    = a.maiden_name      || "";
+  if (getInput("jdelacruz@up.edu.ph")) getInput("jdelacruz@up.edu.ph").value = a.current_email  || "";
+  if (getInput("e.g. 09XXXXXXXXX"))    getInput("e.g. 09XXXXXXXXX").value    = a.phone_number   || "";
+  if (getInput("Your Home Address"))   getInput("Your Home Address").value   = a.current_address || "";
+  if (getInput("xxxx-xxxxx"))          getInput("xxxx-xxxxx").value          = a.student_number  || "";
+  if (getInput("MM/YYYY"))             getInput("MM/YYYY").value             = toMMYYYY(a.entry_date || "");
+
+  // Sex dropdown
+  const sexSelect = form.querySelector("select.sex");
+  if (sexSelect && a.gender) sexSelect.value = a.gender;
+
+  // Organizations
+  const orgContainer = document.getElementById("organization-container");
+  if (orgContainer) {
+    orgContainer.innerHTML = "";
+    const orgs = a.active_orgs || [];
+    if (orgs.length === 0) {
+      orgContainer.appendChild(buildOrgRow());
+    } else {
+      orgs.forEach(org => {
+        const name = typeof org === "object" ? org.organization_name : org;
+        const id   = typeof org === "object" ? org.org_id : null;
+        orgContainer.appendChild(buildOrgRow(name, id));
+      });
+    }
+  }
+
+  // Employment
+  const empContainer = document.getElementById("employment-container");
+  if (empContainer) {
+    empContainer.innerHTML = "";
+    const emps = a.employment_hist || [];
+    if (emps.length === 0) {
+      empContainer.appendChild(buildEmploymentRow());
+    } else {
+      emps.forEach(emp => empContainer.appendChild(buildEmploymentRow(emp)));
+    }
+  }
+
+  // Academic history
+  const gradContainer = document.getElementById("graduate-container");
+  if (gradContainer) {
+    gradContainer.innerHTML = "";
+    const gradInfos = a.academic_hist || [];
+    if (gradInfos.length === 0) {
+      gradContainer.appendChild(buildGraduateRow());
+    } else {
+      gradInfos.forEach(g => gradContainer.appendChild(buildGraduateRow(g, g.degree_name || "")));
+    }
+  }
+
+  // Academic achievements
+  const achieveInput = form.querySelector('input[placeholder="e.g. Best Thesis Awardee, Dean\'s Lister, etc."]');
+  if (achieveInput) achieveInput.value = a.academic_achievements || "";
+}
+
+// ── Collect form data and call updateAlumni ──────────────────────
+
+async function saveEdit() {
+  const raw = sessionStorage.getItem("editAlumni");
+  if (!raw) { alert("Session expired. Please go back to Records."); return; }
+  const original = JSON.parse(raw);
+
+  const form = document.querySelector(".alumni-form");
+  const getVal = (sel) => {
+    const el = form.querySelector(sel);
+    return el ? (el.value.trim() || null) : null;
+  };
+
+  // ── alumni_info ────────────────────────────────────────────────
+  const alumni_info = {
+    alumni_id:    original.alumni_id,
+    first_name:   getVal('input[placeholder="First Name"]'),
+    last_name:    getVal('input[placeholder="Last Name"]'),
+    middle_name:  getVal('input[placeholder="M.I."]'),
+    suffix:       getVal('input[placeholder="Jr., III, etc."]'),
+    maiden_name:  getVal('input[placeholder="Maiden Name"]'),
+    gender:       getVal('select.sex'),
+    current_email:   getVal('input[placeholder="jdelacruz@up.edu.ph"]'),
+    phone_number:    (() => {
+      let p = getVal('input[placeholder="e.g. 09XXXXXXXXX"]');
+      if (!p) return null;
+      p = p.replace(/[-\s]/g, "");
+      if (p.startsWith("0") && p.length === 11) p = p.substring(1);
+      else if (p.startsWith("+63")) p = p.substring(3);
+      return p;
+    })(),
+    current_address: getVal('input[placeholder="Your Home Address"]'),
+    student_number:  getVal('input[placeholder="xxxx-xxxxx"]'),
+    entry_date: (() => {
+      const raw = getVal('input[placeholder="MM/YYYY"]');
+      if (!raw) return null;
+      if (raw.includes("/")) {
+        const [m, y] = raw.split("/");
+        return `${y}-${m.padStart(2, "0")}-01`;
+      }
+      return raw;
+    })(),
+    academic_achievements: getVal('input[placeholder="e.g. Best Thesis Awardee, Dean\'s Lister, etc."]'),
+  };
+
+  // ── employment_hist ────────────────────────────────────────────
+  const origEmpIds = new Set((original.employment_hist || []).map(e => String(e.employment_id)));
+  const seenEmpIds = new Set();
+
+  const convertDate = (val) => {
+    if (!val || val.toLowerCase() === "present") return null;
+    if (val.includes("/")) { const [m, y] = val.split("/"); return `${y}-${m.padStart(2,"0")}-01`; }
+    if (val.length === 4) return `${val}-01-01`;
+    return null;
+  };
+
+  const parseYear = (str) => { const m = str?.match(/\b\d{4}\b/); return m ? parseInt(m[0]) : null; };
+  const parseSem  = (str) => {
+    if (!str) return null;
+    const l = str.toLowerCase();
+    if (l.includes("1st") || l.startsWith("1")) return 1;
+    if (l.includes("2nd") || l.startsWith("2")) return 2;
+    if (l.includes("mid") || l.includes("3rd") || l.startsWith("3")) return 3;
+    return null;
+  };
+
+  const employment_hist = [];
+
+  document.querySelectorAll("#employment-container .employment-row").forEach(row => {
+    const employer  = row.querySelector('input[placeholder="e.g. Google, Inc."]')?.value.trim() || null;
+    const position  = row.querySelector('input[placeholder="e.g. Head Software Engineer"]')?.value.trim() || null;
+    const dates     = row.querySelectorAll('input[placeholder="MM/YYYY"]');
+    const startRaw  = dates[0]?.value.trim() || "";
+    const endRaw    = dates[1]?.value.trim() || "";
+    const isPresent = endRaw.toLowerCase() === "present" || endRaw === "";
+
+    if (!employer && !position) return;
+
+    const empId = row.dataset.employmentId ? parseInt(row.dataset.employmentId) : -1;
+    if (empId > 0) seenEmpIds.add(String(empId));
+
+    employment_hist.push({
+      employment_id:     empId,
+      employer,
+      last_position_held: position,
+      start_date:  convertDate(startRaw),
+      end_date:    isPresent ? null : convertDate(endRaw),
+      is_current:  isPresent,
+    });
+  });
+
+  // Mark deleted employment entries
+  for (const id of origEmpIds) {
+    if (!seenEmpIds.has(id)) {
+      employment_hist.push({ employment_id: -2, idToDelete: parseInt(id) });
+    }
+  }
+
+  // ── academic_hist ──────────────────────────────────────────────
+  const origGradIds = new Set((original.academic_hist || []).map(g => String(g.graduation_id)));
+  const seenGradIds = new Set();
+  const academic_hist = [];
+
+  document.querySelectorAll("#graduate-container .graduate-row").forEach(row => {
+    const degree      = row.querySelector('input[placeholder="BS Economics"]')?.value.trim() || null;
+    const university  = row.querySelector('input[placeholder="e.g. University of the Philippines"]')?.value.trim() || null;
+    const latinRaw    = row.querySelector("select.latin-honors")?.value || null;
+    const latin_honor = (!latinRaw || latinRaw === "N/A") ? null : latinRaw.toLowerCase().replace(/ /g, "_");
+    const startStr    = row.querySelector('input[placeholder="1st Sem, 2026"]')?.value.trim() || "";
+    const gradStr     = row.querySelector('input[placeholder="2nd Sem, 2030"]')?.value.trim() || "";
+
+    if (!degree && !startStr && !gradStr) return;
+
+    const gradId = row.dataset.graduationId ? parseInt(row.dataset.graduationId) : -1;
+    if (gradId > 0) seenGradIds.add(String(gradId));
+
+    academic_hist.push({
+      graduation_id:      gradId,
+      degree_name:        degree,
+      granting_university: university,
+      latin_honor,
+      year_started:       parseYear(startStr),
+      semester_started:   parseSem(startStr),
+      year_graduated:     parseYear(gradStr),
+      semester_graduated: parseSem(gradStr),
+    });
+  });
+
+  // Mark deleted academic entries
+  for (const id of origGradIds) {
+    if (!seenGradIds.has(id)) {
+      academic_hist.push({ graduation_id: -2, idToDelete: parseInt(id) });
+    }
+  }
+
+  // ── active_orgs ────────────────────────────────────────────────
+  const origOrgIds = new Set((original.active_orgs || []).map(o => String(o.org_id)));
+  const seenOrgIds = new Set();
+  const active_orgs = [];
+
+  document.querySelectorAll("#organization-container .organization-row").forEach(row => {
+    const name = row.querySelector('input[placeholder="Organization"]')?.value.trim() || null;
+    if (!name) return;
+
+    const orgId = row.dataset.orgId ? parseInt(row.dataset.orgId) : -1;
+    if (orgId > 0) seenOrgIds.add(String(orgId));
+
+    active_orgs.push({ org_id: orgId, organization_name: name });
+  });
+
+  // Mark deleted org entries
+  for (const id of origOrgIds) {
+    if (!seenOrgIds.has(id)) {
+      active_orgs.push({ org_id: -2, idToDelete: parseInt(id) });
+    }
+  }
+
+  // ── Send to server ─────────────────────────────────────────────
+  const payload = { alumni_info, academic_hist, employment_hist, active_orgs };
+
+  await updateAlumni(payload);
+
+  // Update sessionStorage so a second Save reflects new state
+  sessionStorage.setItem("editAlumni", JSON.stringify({
+    ...original,
+    ...alumni_info,
+    employment_hist: employment_hist.filter(e => e.employment_id !== -2),
+    academic_hist:   academic_hist.filter(g => g.graduation_id !== -2),
+    active_orgs:     active_orgs.filter(o => o.org_id !== -2),
+  }));
+}
+
+// Initialise edit form if on the edit page
+document.addEventListener("DOMContentLoaded", () => {
+  if (document.querySelector(".alumni-form") && sessionStorage.getItem("editAlumni")) {
+    // Only prefill on edit-records.html (not add-records.html which has no session data)
+    if (window.location.pathname.includes("edit-records")) {
+      prefillEditForm();
+    }
+  }
+
+  // Wire Cancel / Save buttons on the edit page
+  const cancelBtn = document.querySelector(".cancel-btn");
+  const saveBtn   = document.querySelectorAll("#edit-save-cancel .add-btn");
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => {
+      sessionStorage.removeItem("editAlumni");
+      window.location.href = "index.html";
+    });
+  }
+  saveBtn.forEach(btn => btn.addEventListener("click", saveEdit));
 });
