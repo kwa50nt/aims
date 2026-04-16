@@ -81,7 +81,6 @@ function convertFlag(flag){
 
 function getAlumniWhereQuery(filter){
   let resFilters = [];
-  console.log(filter)
   resFilters.push( filter["gender"].map( g =>
      "gender " + convertFlag(g["flag"]) +" \'" + g["gender"] + "\'"
   ).join(joinOp));
@@ -147,7 +146,6 @@ function getActiveOrgsWhereQuery(filter){
 function getAcadHistWhereQuery(filter){
   let resFilters = [];
   const test = filter["acadHist"]["degreeAndUniv"];
-  console.log(test);
   resFilters.push( filter["acadHist"]["degreeAndUniv"].map( (g) =>{
     let ret = "(degree_name " + convertFlag(g["flag"]) +" \'" + g["degreeName"] + "\'";
     if (g["flag"] == "include"){
@@ -190,8 +188,7 @@ const pool = new Pool({
   password: process.env.PGPASSWORD || "password",
   port: process.env.PGPORT ? parseInt(process.env.PGPORT) : 5432,
 });
-function parseInsertQuery(tName, data, alumni_id){
-
+function parseInsertQuery(tName, data, alumniID){
   let insertQuery = ""; 
   let valArr = []; 
   if (tName == "academichistory"){
@@ -219,9 +216,9 @@ function parseInsertQuery(tName, data, alumni_id){
         $7,
         $8
         )
-        RETURNING *`;
+        `;
         valArr = [
-            alumni_id,
+            alumniID,
             data.degree_name,
             data.year_started,
             data.semester_started,
@@ -256,9 +253,9 @@ function parseInsertQuery(tName, data, alumni_id){
           $5,
           $6
         )
-        RETURNING *`;
+        `;
       valArr = [
-        alumni_id,
+        alumniID,
         data.employer,
         data.last_position_held,
         data.start_date,
@@ -285,9 +282,9 @@ function parseInsertQuery(tName, data, alumni_id){
         $1,
         $2
         )
-        RETURNING *`;
+        `;
       valArr = [
-        alumni_id,
+        alumniID,
         data.organization_name
       ]
     }
@@ -295,7 +292,6 @@ function parseInsertQuery(tName, data, alumni_id){
       console.log(`Error parsing active organization insert into \n `,err);
     }
   }
-  console.log(insertQuery,valArr );
   return {insertQuery, valArr};
 }
 
@@ -391,83 +387,26 @@ app.post("/add-alumni", async (req, res) => {
         current_address,
       ]
     );
-    const alumni_id = alumniResult.rows[0].alumni_id;
-    console.log(alumniResult.rows[0]);
+    const newAlumniID = alumniResult.rows[0].alumni_id;
     let acadHistoryEntry;
     for (i = 0 ; i < academic_hist.length; i++){
       acadHistoryEntry = academic_hist[i];
-      await client.query(
-        `INSERT INTO academicHistory
-        (
-          alumni_id, 
-          degree_name,
-          year_started, 
-          semester_started, 
-          year_graduated, 
-          semester_graduated, 
-          latin_honor,
-          granting_university
-          )
-
-        VALUES ($1,$2,$3,$4,$5,$6, $7, $8)
-        RETURNING *`,
-        [
-          alumni_id, 
-          acadHistoryEntry.degree_name, 
-          acadHistoryEntry.year_started, 
-          acadHistoryEntry.semester_started, 
-          acadHistoryEntry.year_graduated, 
-          acadHistoryEntry.semester_graduated, 
-          acadHistoryEntry.latin_honor,
-          acadHistoryEntry.granting_university
-        ]
-      );
+      const {insertQuery, valArr} = parseInsertQuery(tableName.academic_hist,acadHistoryEntry, newAlumniID )
+      await client.query(insertQuery, valArr);
     }
 
     let employmentHistEntry;
     for (i = 0 ; i < employment_hist.length; i++){
       employmentHistEntry = employment_hist[i];
-      await client.query(
-        `INSERT INTO employmenthistory
-        (
-          alumni_id, 
-          employer, 
-          last_position_held, 
-          start_date, 
-          end_date, 
-          is_current
-          )
-
-        VALUES ($1,$2,$3,$4,$5,$6)
-        RETURNING *`,
-        [
-          alumni_id, 
-          employmentHistEntry.employer, 
-          employmentHistEntry.last_position_held, 
-          employmentHistEntry.start_date, 
-          employmentHistEntry.end_date, 
-          employmentHistEntry.is_current
-        ]
-      );
+      const {insertQuery, valArr} = parseInsertQuery(tableName.employment_hist,employmentHistEntry, newAlumniID )
+      await client.query(insertQuery, valArr);
     }
     
     let activeOrgEntry;
     for (i = 0 ; i < active_orgs.length; i++){
       activeOrgEntry = active_orgs[i];
-      await client.query(
-        `INSERT INTO activeorganizations
-        (
-          alumni_id, 
-          organization_name
-          )
-
-        VALUES ($1,$2)
-        RETURNING *`,
-        [
-          alumni_id, 
-          activeOrgEntry.organization_name
-        ]
-      );
+      const {insertQuery, valArr} = parseInsertQuery(tableName.active_orgs,activeOrgEntry, newAlumniID )
+      await client.query(insertQuery, valArr);
     }
     
     await client.query("COMMIT");
@@ -531,21 +470,19 @@ app.get("/get-alumnis", async (req, res) => {
         alumniOrder = "ORDER BY " + sortBy + " " + order + ", last_name " + order + ", first_name " + order;
       }
     }
-    console.log(filters)
     filter = JSON.parse(filters);
 
-    console.log(filter)
     const alumniWhereQuery = getAlumniWhereQuery(filter);
-    console.log(`alumni \n ${alumniWhereQuery}`);
+    // console.log(`alumni \n ${alumniWhereQuery}`);
 
     const employmentWhereQuery = getEmploymentWhereQuery(filter);
-    console.log(`employment \n ${employmentWhereQuery}`);
+    // console.log(`employment \n ${employmentWhereQuery}`);
 
     const activeOrgWhereQuery = getActiveOrgsWhereQuery(filter);
-    console.log(`activeOrgs \n ${activeOrgWhereQuery}`);
+    // console.log(`activeOrgs \n ${activeOrgWhereQuery}`);
 
     const acadHistWhereQuery = getAcadHistWhereQuery(filter);
-    console.log(`acadHist \n ${acadHistWhereQuery}`);
+    // console.log(`acadHist \n ${acadHistWhereQuery}`);
 
     const alumniBase = `WITH alumni_base AS (
     SELECT *
@@ -649,9 +586,8 @@ app.get("/get-alumnis", async (req, res) => {
     ${alumniOrder}`;
 
     // final query
-    console.log(alumniBase + acadHist + empHist + activeOrg + finalQuery)
+    // console.log(alumniBase + acadHist + empHist + activeOrg + finalQuery)
     const alumniDB = await client.query(alumniBase + acadHist + empHist + activeOrg + finalQuery)
-    console.log(alumniDB.rows);
 
     // send as JSON
     res.json(alumniDB.rows);
@@ -677,7 +613,6 @@ const XLSX = require("xlsx");
 const { start } = require("node:repl");
 
 const upload = multer({ storage: multer.memoryStorage() });
-
 app.post("/upload-excel", upload.single("file"), async (req, res) => {
   const client = await pool.connect();
 
@@ -757,6 +692,7 @@ app.post("/upload-excel", upload.single("file"), async (req, res) => {
   }
 });
 app.post("/update-alumni", async (req, res) => {
+  
   const {
     alumni_info,
     academic_hist,
@@ -768,16 +704,14 @@ app.post("/update-alumni", async (req, res) => {
     employment_hist,
     active_orgs
   };
-  console.log("============================updating alumni============================");
+  let added =[];
 
   const client = await pool.connect();
-  console.log(req.body);
   try {
     let resQuery;
     await client.query("BEGIN");
     if (alumni_info != null){
       for (const [k,v] of Object.entries(alumni_info)){
-        console.log(k, v);
         if (k == 'alumni_id') continue;
 
         // SAFETY CHECK: Skip fields that don't exist in the database schema
@@ -785,24 +719,19 @@ app.post("/update-alumni", async (req, res) => {
             console.log(`Skipping unsupported field: ${k}`);
             continue;
         }
-
-        console.log(`
-          UPDATE ${tableName.alumni_info}
-          SET ${colNames[k]} = $1
-          WHERE alumni_id = $2
-          `,[
-            v,
-            alumni_info.alumni_id
-          ])
         resQuery = await client.query(`
           UPDATE ${tableName.alumni_info}
           SET ${colNames[k]} = $1
           WHERE alumni_id = $2
+          RETURNING *;
           `,[
             v,
             alumni_info.alumni_id
           ])
-        console.log(resQuery);
+        added.push({
+          command: resQuery.command,
+          new: resQuery.rows
+        });
       }
     }
     
@@ -815,56 +744,53 @@ app.post("/update-alumni", async (req, res) => {
         if (idNum >= 0){
           for (const [k,v] of Object.entries(elem)){
             if (k == idStr) continue;
-              console.log(`
-                UPDATE ${tableToEdit}
-                SET ${colNames[k]} = $1
-                WHERE ${idStr} = $2
-                `, [
-                  v,
-                  idNum
-                ]);
               resQuery = await client.query(`
                 UPDATE ${tableToEdit}
                 SET ${colNames[k]} = $1
                 WHERE ${idStr} = $2
+                RETURNING *;
                 `, [
                   v,
                   idNum
                 ]);
-            console.log(resQuery);
+              added.push({
+                command: resQuery.command,
+                new: resQuery.rows
+              });
           }            
         }
         else if (idNum == -1){
           const {insertQuery, valArr} = parseInsertQuery(tableToEdit, elem, alumni_info.alumni_id);
-          console.log(insertQuery, valArr);
           if (insertQuery != ""){
             resQuery = await client.query(insertQuery, valArr);
-            console.log(resQuery);
+            added.push({
+                command: resQuery.command,
+                new: resQuery.rows
+              });
           }
         }
         else if (idNum == -2){
-          console.log(`
-            DELETE FROM ${tableToEdit}
-            WHERE ${idStr} = $1
-            `,
-            [
-             elem.idToDelete 
-            ]);
           resQuery = await client.query(`
             DELETE FROM ${tableToEdit}
             WHERE ${idStr} = $1
+            RETURNING *;
             `,
             [
              elem.idToDelete 
             ]);
-          console.log(resQuery);
+          added.push({
+                command: resQuery.command,
+                new: resQuery.rows
+              });
         }
       }
     }
-
     await client.query("COMMIT");
+    res.json(added);
+
   } catch (err) {
     await client.query("ROLLBACK");
+    console.log("error updating alumni ", err.message)
     res.status(500).json({ error: err.message });
 
   } finally {
