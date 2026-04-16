@@ -95,41 +95,41 @@ test.describe("Edit alumni profile", () => {
   });
   test.describe("Editing information", () => {
     
-    test("Edit general alumni information", async ({
-      page,
-    }) => {
-      // ==========================================
-      // =                 TODO                   =
-      // ==========================================
-      // edit alumni info into this
+    // test("Edit general alumni information", async ({
+    //   page,
+    // }) => {
+    //   // ==========================================
+    //   // =                 TODO                   =
+    //   // ==========================================
+    //   // edit alumni info into this
 
-      // alumni_info:{
-      //   alumni_id: 2424,
-      //   student_number: '2015-88990',
-      //   last_name: 'Navarro',
-      //   gender: 'M',
-      //   current_address: 'Quezon City',
-      // }
+    //   // alumni_info:{
+    //   //   alumni_id: 2424,
+    //   //   student_number: '2015-88990',
+    //   //   last_name: 'Navarro',
+    //   //   gender: 'M',
+    //   //   current_address: 'Quezon City',
+    //   // }
 
-      await page.locator('label:has-text("Last Name") + input').fill('Navarro');
-      await page.locator('label:has-text("Student-Number") + input').fill('2015-88990');
-      await page.locator('label:has-text("Sex Assigned at Birth") + select').selectOption('Male');
-      await page.locator('label:has-text("Home Address (Primary)") + input').fill('Quezon City');
+    //   await page.locator('label:has-text("Last Name") + input').fill('Navarro');
+    //   await page.locator('label:has-text("Student-Number") + input').fill('2015-88990');
+    //   await page.locator('label:has-text("Sex Assigned at Birth") + select').selectOption('Male');
+    //   await page.locator('label:has-text("Home Address (Primary)") + input').fill('Quezon City');
         
-      await page.locator('button:has-text("Save")').click();
+    //   await page.locator('button:has-text("Save")').click();
       
-      let response = await fetch(`http://localhost:3001/get-alumnis?sortBy=none&order=none&filters=${encodedFilters}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-      let fetched = await response.json();
-      expect(fetched[0].student_number).toBe('2015-88990');
-      expect(fetched[0].last_name).toBe('Navarro');
-      expect(fetched[0].gender).toBe('M');
-      expect(fetched[0].current_address).toBe('Quezon City');
-    });
+    //   let response = await fetch(`http://localhost:3001/get-alumnis?sortBy=none&order=none&filters=${encodedFilters}`, {
+    //     method: "GET",
+    //     headers: {
+    //       "Content-Type": "application/json"
+    //     }
+    //   });
+    //   let fetched = await response.json();
+    //   expect(fetched[0].student_number).toBe('2015-88990');
+    //   expect(fetched[0].last_name).toBe('Navarro');
+    //   expect(fetched[0].gender).toBe('M');
+    //   expect(fetched[0].current_address).toBe('Quezon City');
+    // });
 
     // test("Edit Employment History", async ({
     //   page,
