@@ -259,6 +259,8 @@ async function updateAlumni(data) {
     );
     const fetched = await response.json();
     console.log("Server Response:", fetched);
+    window.location.href = "http://localhost:3000/index.html";
+
     
   } catch (err) {
     console.log("error updating alumni:", err);
