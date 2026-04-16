@@ -65,6 +65,7 @@ function mockAddAlumni(route: any, request: any) {
 // -----------------------------------------------------------------------
 test.describe("Add Alumni (Mocked API)", () => {
   test.beforeEach(async ({ page }) => {
+    await page.goto("http://localhost:3000/edit-records");
     await page.route("**/add-alumni", mockAddAlumni);
   });
 

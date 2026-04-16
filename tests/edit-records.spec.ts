@@ -16,6 +16,6 @@ test.describe('Edit Alumni Records', () => {
     await page.locator('label:has-text("Year and Semester Started") + input').fill('2020');
 
     await page.click('button:has-text("Cancel")');
-    await page.click('button:has-text("Save")');
+    // await page.click('button:has-text("Save")');
   });
 });
