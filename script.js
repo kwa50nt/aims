@@ -517,8 +517,10 @@ let sortOrder = {
 
 async function getAlumnis(sortBy = "none"){
   filters = JSON.parse(localStorage.getItem("filters"));
-  if (filters == null) filters = JSON.parse(JSON.stringify(blankFilters));
-  localStorage.setItem("filters", JSON.stringify(blankFilters));
+  if (!filters) {
+    filters = JSON.parse(JSON.stringify(blankFilters))
+    localStorage.setItem("filters", JSON.stringify(blankFilters));
+  }
   try {
     const alternateOrder = {
       "asc":"desc",
