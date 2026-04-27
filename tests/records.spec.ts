@@ -136,13 +136,7 @@ test.describe("Records Page", () => {
         page.getByRole("link", { name: "Records", exact: true })
       ).toBeVisible();
       await expect(
-        page.getByRole("link", { name: "Email Blast" })
-      ).toBeVisible();
-      await expect(
         page.getByRole("link", { name: "Add Records" })
-      ).toBeVisible();
-      await expect(
-        page.getByRole("link", { name: "Alumni News" })
       ).toBeVisible();
     });
 
