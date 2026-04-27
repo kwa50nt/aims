@@ -685,6 +685,7 @@ function renderAlumniRow(alumni) {
   row.dataset.alumniId = alumni.alumni_id;
 
   row.dataset.email = alumni.current_email || "";
+  row.dataset.fullName = fullName || "";
 
   row.innerHTML = `
     <input type="checkbox">
@@ -775,19 +776,33 @@ function exportEmails() {
   let targetRows = [
     ...document.querySelectorAll(".alumni-row input[type='checkbox']:checked"),
   ].map((box) => box.closest(".alumni-row"));
+  
   if (targetRows.length == 0) {
     targetRows = [...document.querySelectorAll(".alumni-row")];
   }
 
-  const emails = targetRows.map((row) => row.dataset.email).filter(Boolean);
+  const exportRecords = targetRows.map((row) => {
+    const email = row.dataset.email;
+    const name = row.dataset.fullName || "";
+    
+    // Skip rows that don't have an email attached
+    if (!email) return null;
+    
+    // Wrap strings in double quotes to prevent commas in names from breaking the CSV
+    return `"${name}","${email}"`;
+  }).filter(Boolean);
 
-  if (emails.length === 0) {
-    alert("No email addresses found in the selected records.");
+  if (exportRecords.length === 0) {
+    alert("No valid email addresses found in the selected records.");
     return;
   }
 
-  const csv = ["UPSE Alumni Email Addresses", ...emails].join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
+  // Include header row with two columns
+  const csv = ["Full Name,Email Address", ...exportRecords].join("\n");
+  
+  // Use UTF-8 encoding marker to ensure special characters render correctly in Excel
+  const blob = new Blob(["\ufeff", csv], { type: "text/csv;charset=utf-8;" });
+  
   const downloadCSV = document.createElement("a");
   const url = URL.createObjectURL(blob);
   downloadCSV.href = url;
