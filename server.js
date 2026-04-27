@@ -79,7 +79,7 @@ function convertFlag(flag){
   }
 }
 
-function getAlumniWhereQuery(filter){
+function getAlumniWhereQuery(filter, keyWord = "none"){
   let resFilters = [];
   resFilters.push( filter["gender"].map( g =>
      "gender " + convertFlag(g["flag"]) +" \'" + g["gender"] + "\'"
@@ -102,6 +102,16 @@ function getAlumniWhereQuery(filter){
     part += " BETWEEN \'" + ed["start"] + "\' AND \'" + ed["end"] +"\'"
     return part
   }).join(joinOp));
+
+  if (keyWord != "none"){
+    resFilters.push (`(first_name ILIKE '%' || $1 || '%'
+    OR last_name ILIKE '%' || $1 || '%'
+    OR middle_name ILIKE '%' || $1 || '%'
+    OR suffix ILIKE '%' || $1 || '%'
+    OR current_email ILIKE '%' || $1 || '%'
+    OR current_address ILIKE '%' || $1 || '%')`)
+  }
+
   res = resFilters.filter(x => x !== "").join(joinOp);
   if (res != ""){
     res = "WHERE " + res;
@@ -456,7 +466,8 @@ app.get("/get-alumnis", async (req, res) => {
     const { 
       sortBy = "none", 
       order = "none",
-      filters
+      filters,
+      searchKeyword
     } = req.query;
     
     let alumniOrder = "";
@@ -472,7 +483,7 @@ app.get("/get-alumnis", async (req, res) => {
     }
     filter = JSON.parse(filters);
 
-    const alumniWhereQuery = getAlumniWhereQuery(filter);
+    const alumniWhereQuery = getAlumniWhereQuery(filter, searchKeyword);
     // console.log(`alumni \n ${alumniWhereQuery}`);
 
     const employmentWhereQuery = getEmploymentWhereQuery(filter);
@@ -577,7 +588,7 @@ app.get("/get-alumnis", async (req, res) => {
         a.middle_name,
         a.suffix,
         a.gender,
-        a.student_number,
+         a.student_number,
         a.entry_date,
         a.current_email,
         a.phone_number,
@@ -587,8 +598,11 @@ app.get("/get-alumnis", async (req, res) => {
 
     // final query
     // console.log(alumniBase + acadHist + empHist + activeOrg + finalQuery)
-    const alumniDB = await client.query(alumniBase + acadHist + empHist + activeOrg + finalQuery)
-
+    const alumniDB = await client.query(alumniBase + acadHist + empHist + activeOrg + finalQuery, 
+      searchKeyword !== "none" ? [searchKeyword] : []
+    )
+    // print final query
+    // console.log(alumniBase + acadHist + empHist + activeOrg + finalQuery)
     // send as JSON
     res.json(alumniDB.rows);
 

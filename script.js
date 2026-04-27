@@ -78,32 +78,6 @@ function deleteFilter(path, filter) {
   return true;
 }
 
-function filterTest() {
-  filters = {
-    gender: [
-      {
-        gender: "F",
-        flag: "exclude",
-      },
-    ],
-    studentNum: [
-      {
-        start: 2020,
-        end: 2025,
-        flag: "exclude",
-      },
-    ],
-    entryDate: [
-      {
-        start: "2020-2-2",
-        end: "2025-2-2",
-        flag: "exclude",
-      },
-    ],
-  };
-  getAlumnis("none", filters);
-}
-
 function addEmployment() {
   const container = document.getElementById("employment-container");
 
@@ -515,7 +489,8 @@ let sortOrder = {
   entry_date: "asc",
 };
 
-async function getAlumnis(sortBy = "none"){
+async function getAlumnis(sortBy = "none", searchKeyword = "none"){
+  if (searchBarInput.value.trim() != "" ) searchKeyword = searchBarInput.value.trim();
   filters = JSON.parse(localStorage.getItem("filters"));
   if (!filters) {
     filters = JSON.parse(JSON.stringify(blankFilters))
@@ -535,7 +510,7 @@ async function getAlumnis(sortBy = "none"){
 
     const encodedFilters = encodeURIComponent(JSON.stringify(filters));
 
-    const response = await fetch(`http://localhost:${portNumberBackEnd}/get-alumnis?sortBy=${sortBy}&order=${order}&filters=${encodedFilters}`, {
+    const response = await fetch(`http://localhost:${portNumberBackEnd}/get-alumnis?sortBy=${sortBy}&order=${order}&filters=${encodedFilters}&searchKeyword=${searchKeyword}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
@@ -1468,4 +1443,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   saveBtn.forEach(btn => btn.addEventListener("click", saveEdit));
+});
+
+function addSearch(searchKeyword){
+  getAlumnis(undefined,searchKeyword)
+}
+
+const searchBarInput =document.getElementById("searchBar");
+
+searchBarInput.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      console.log("search bar enter presssed")
+        const value = searchBarInput.value.trim();
+
+        if (value !== "") {
+            addSearch(value);
+        }
+    }
 });
