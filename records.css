@@ -501,3 +501,38 @@ main > div:first-child {
     cursor: pointer;
     accent-color: #02451C;
 }
+
+/* Icon tooltips under name */
+.icon-tooltip-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.icon-tooltip-wrapper::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 50%;
+    display: block;
+    background-color: #1f2937;
+    color: #fff;
+    font-family: 'Inter', Arial, Calibri, sans-serif;
+    font-size: 0.72rem;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-width: 220px;
+    width: 220px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    z-index: 500;
+}
+
+.icon-tooltip-wrapper:hover::after,
+.icon-tooltip-wrapper:hover::before {
+    opacity: 1;
+}

@@ -689,9 +689,15 @@ function renderAlumniRow(alumni) {
   row.innerHTML = `
     <input type="checkbox">
     <div class="name-cell">
-      <img src="assets/email popup.png" alt="" title="${alumni.current_email}">
-      <img src="assets/number popup.png" alt="" title="${alumni.phone_number}">
-      <img src="assets/location popup.png" alt="" title="${alumni.current_address || "No address on record"}">
+      <span class="icon-tooltip-wrapper" data-tooltip="${alumni.current_email || 'No email on record'}">
+        <img src="assets/email popup.png" alt="Email">
+      </span>
+      <span class="icon-tooltip-wrapper" data-tooltip="${alumni.phone_number ? '0' + alumni.phone_number : 'No number on record'}">
+        <img src="assets/number popup.png" alt="Phone">
+      </span>
+      <span class="icon-tooltip-wrapper" data-tooltip="${alumni.current_address || 'No address on record'}">
+        <img src="assets/location popup.png" alt="Address">
+      </span>
       <p>${fullName}</p>
     </div>
     <p>${alumni.gender || "—"}</p>
