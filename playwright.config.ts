@@ -41,6 +41,7 @@ export default defineConfig({
       /login-forms\.spec\.ts/,
       /records\.spec\.ts/,
       /register-forms\.spec\.ts/
+      
       ],
       use: { ...devices['Desktop Chrome'] },
       workers: 8

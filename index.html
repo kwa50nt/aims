@@ -321,8 +321,14 @@
 
 </html>
 
-<!-- <script src="auth.js"></script>
-<script src="script.js"></script>
+<script src="auth.js"></script>
 <script>
-  requireAuth(); // checks for token, redirects to login if missing
-</script> -->
+    // Force re-auth check on every load, even when navigating back
+    window.onpageshow = function(event) {
+    if (event.persisted) {
+        // Page was restored from cache — re-check auth
+        requireAuth("Admin", "IT"); // or "Alumni" depending on the page
+    }
+    };
+    requireAuth("Admin", "IT");
+</script>

@@ -1,4 +1,5 @@
 const TOKEN_KEY = "aims_token";
+const ROLE_KEY  = "aims_role";
 
 function saveToken(token) {
   localStorage.setItem(TOKEN_KEY, token);
@@ -10,34 +11,26 @@ function getToken() {
 
 function clearToken() {
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(ROLE_KEY);
 }
 
-// Redirects to login if no token is found
-function requireAuth() {
+function requireAuth(...allowedRoles) {
   const token = getToken();
   if (!token) {
-    window.location.href = "login-forms.html";
+    window.location.href = "/login-forms.html";
     return;
   }
 
-  // Verify token is still valid with the backend
-  fetch("http://localhost:3001/me", {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-    .then((res) => {
-      if (!res.ok) {
-        clearToken();
-        window.location.href = "login-forms.html";
-      }
-    })
-    .catch(() => {
-      clearToken();
-      window.location.href = "login-forms.html";
-    });
+  if (allowedRoles.length > 0) {
+    const role = localStorage.getItem(ROLE_KEY);
+    if (!allowedRoles.includes(role)) {
+      const correctPage = role === "Alumni" ? "/profile.html" : "/index.html";
+      window.location.replace(correctPage);
+    }
+  }
 }
 
-// Call this on the logout button
 function logout() {
   clearToken();
-  window.location.href = "login-forms.html";
+  window.location.href = "/login-forms.html";
 }

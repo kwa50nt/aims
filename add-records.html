@@ -16,10 +16,10 @@
         <button class="profile-btn" onclick="toggleAdminPanel()">
             <i class="fas fa-user"></i>
         </button>
-        <div class="logout">
-            <p>admin.up.edu.ph</p>
-            <img src="assets/logout.png" alt="Logout icon">
-        </div>
+         <div class="logout" onclick="logout()" style="cursor: pointer;">
+              <p>admin.up.edu.ph</p>
+              <img src="assets/logout.png" alt="Logout icon">
+          </div>
     </div>
   </header>
 
@@ -268,3 +268,14 @@
 </body>
 </html>
 
+<script src="auth.js"></script>
+<script>
+    // Force re-auth check on every load, even when navigating back
+  window.onpageshow = function(event) {
+    if (event.persisted) {
+      // Page was restored from cache — re-check auth
+      requireAuth("Admin", "IT"); // or "Alumni" depending on the page
+    }
+  };
+  requireAuth("Admin", "IT");
+</script>

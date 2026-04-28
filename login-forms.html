@@ -43,11 +43,6 @@
 
     <script src="auth.js"></script>
     <script>
-        // If already logged in, skip the login page
-        if (localStorage.getItem("aims_token")) {
-            window.location.href = "index.html";
-        }
-
         document.getElementById("login-form").addEventListener("submit", async function (e) {
             e.preventDefault();
 
@@ -79,7 +74,8 @@
                 }
 
                 saveToken(data.token);
-                window.location.href = "index.html";
+                localStorage.setItem("aims_role", data.role);
+                window.location.href = data.redirect;
 
             } catch (err) {
                 errorEl.textContent = "Could not reach the server. Please try again.";

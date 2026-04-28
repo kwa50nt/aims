@@ -49,6 +49,13 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+app.use((req, res, next) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  next();
+});
+
 function excelSerialToDate(serial) {
   if (!serial) return null;
 
@@ -460,6 +467,18 @@ app.delete("/delete-alumni/:id", async (req, res) => {
   }
 });
 
+app.delete("/delete-account/:email", async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query("DELETE FROM webaccount WHERE email = $1", [req.params.email]);
+    res.json({ message: "Account deleted." });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
 app.get("/get-alumnis", async (req, res) => {
   const client = await pool.connect();
   try {
@@ -819,33 +838,23 @@ app.post("/register", async (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ error: "Email and password are required." });
   }
+  if (password.length < 6) {
+    return res.status(400).json({ error: "Password must be at least 6 characters." });
+  }
  
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
  
-    // Check alumni record exists with this email
-    const alumniResult = await client.query(
-      "SELECT alumni_id, account_id FROM upsealumni WHERE current_email = $1",
+    const existing = await client.query(
+      "SELECT account_id FROM webaccount WHERE email = $1",
       [email]
     );
- 
-    if (alumniResult.rows.length === 0) {
-      await client.query("ROLLBACK");
-      return res.status(404).json({
-        error: "No alumni record found with that email. Please contact your administrator.",
-      });
-    }
- 
-    const { alumni_id, account_id } = alumniResult.rows[0];
- 
-    // Prevent double registration
-    if (account_id !== null) {
+    if (existing.rows.length > 0) {
       await client.query("ROLLBACK");
       return res.status(409).json({ error: "An account already exists for this email." });
     }
  
-    // Get or create the Alumni role
     let role_id;
     const roleResult = await client.query(
       "SELECT role_id FROM userrole WHERE role_name = $1",
@@ -861,22 +870,10 @@ app.post("/register", async (req, res) => {
       role_id = roleResult.rows[0].role_id;
     }
  
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
- 
-    // Create the webaccount
-    const accountResult = await client.query(
-      `INSERT INTO webaccount (email, password, role_id)
-       VALUES ($1, $2, $3)
-       RETURNING account_id`,
-      [email, hashedPassword, role_id]
-    );
-    const new_account_id = accountResult.rows[0].account_id;
- 
-    // Link account back to alumni record
     await client.query(
-      "UPDATE upsealumni SET account_id = $1 WHERE alumni_id = $2",
-      [new_account_id, alumni_id]
+      "INSERT INTO webaccount (email, password, role_id) VALUES ($1, $2, $3)",
+      [email, hashedPassword, role_id]
     );
  
     await client.query("COMMIT");
@@ -889,6 +886,7 @@ app.post("/register", async (req, res) => {
     client.release();
   }
 });
+
 
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
@@ -912,24 +910,21 @@ app.post("/login", async (req, res) => {
     }
  
     const account = result.rows[0];
- 
     const passwordMatch = await bcrypt.compare(password, account.password);
     if (!passwordMatch) {
       return res.status(401).json({ error: "Invalid email or password." });
     }
  
-    // Sign a JWT with account info, expires in 8 hours
     const token = jwt.sign(
-      {
-        account_id: account.account_id,
-        email: account.email,
-        role: account.role_name,
-      },
+      { account_id: account.account_id, email: account.email, role: account.role_name },
       JWT_SECRET,
       { expiresIn: "8h" }
     );
  
-    res.json({ token });
+    const redirect =
+      account.role_name === "Alumni" ? "/profile.html" : "/index.html";
+ 
+    res.json({ token, role: account.role_name, redirect });
  
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -179,3 +179,15 @@
     <script src="profile.js"></script>
 </body>
 </html>
+
+<script src="auth.js"></script>
+<script>
+  // Force re-auth check on every load, even when navigating back
+    window.onpageshow = function(event) {
+    if (event.persisted) {
+        // Page was restored from cache — re-check auth
+        requireAuth("Alumni"); // or "Alumni" depending on the page
+    }
+    };
+    requireAuth("Alumni");
+</script>
