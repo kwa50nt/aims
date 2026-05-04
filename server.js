@@ -871,9 +871,16 @@ app.post("/register", async (req, res) => {
     }
  
     const hashedPassword = await bcrypt.hash(password, 10);
-    await client.query(
-      "INSERT INTO webaccount (email, password, role_id) VALUES ($1, $2, $3)",
+    const accountResult = await client.query(
+      "INSERT INTO webaccount (email, password, role_id) VALUES ($1, $2, $3) RETURNING account_id",
       [email, hashedPassword, role_id]
+    );
+    const new_account_id = accountResult.rows[0].account_id;
+
+    // Auto-link to alumni record if one exists with the same email
+    await client.query(
+      "UPDATE upsealumni SET account_id = $1 WHERE current_email = $2 AND account_id IS NULL",
+      [new_account_id, email]
     );
  
     await client.query("COMMIT");
@@ -927,6 +934,124 @@ app.post("/login", async (req, res) => {
     res.json({ token, role: account.role_name, redirect });
  
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
+// GET /alumni-profile
+// Returns the logged-in alumni's data using their email from the JWT
+app.get("/alumni-profile", authenticateToken, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const email = req.user.email;
+
+    const alumniResult = await client.query(
+      "SELECT * FROM upsealumni WHERE current_email = $1",
+      [email]
+    );
+
+    if (alumniResult.rows.length === 0) {
+      return res.status(404).json({ error: "No alumni record found for this account." });
+    }
+
+    const alumni = alumniResult.rows[0];
+    const alumni_id = alumni.alumni_id;
+
+    const academicHist = await client.query(
+      "SELECT * FROM academichistory WHERE alumni_id = $1", [alumni_id]
+    );
+    const employmentHist = await client.query(
+      "SELECT * FROM employmenthistory WHERE alumni_id = $1", [alumni_id]
+    );
+    const activeOrgs = await client.query(
+      "SELECT * FROM activeorganizations WHERE alumni_id = $1", [alumni_id]
+    );
+
+    res.json({
+      ...alumni,
+      academicHist: academicHist.rows,
+      employmentHist: employmentHist.rows,
+      activeOrgs: activeOrgs.rows,
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
+// PUT /alumni-profile
+// Updates the logged-in alumni's data
+app.put("/alumni-profile", authenticateToken, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const email = req.user.email;
+    const {
+      first_name, last_name, middle_name, suffix, gender,
+      phone_number, current_address, entry_date,
+      academicHist, employmentHist, activeOrgs
+    } = req.body;
+
+    const alumniResult = await client.query(
+      "SELECT alumni_id FROM upsealumni WHERE current_email = $1", [email]
+    );
+    if (alumniResult.rows.length === 0) {
+      return res.status(404).json({ error: "No alumni record found." });
+    }
+    const alumni_id = alumniResult.rows[0].alumni_id;
+
+    await client.query("BEGIN");
+
+    // Update main alumni record
+    await client.query(
+      `UPDATE upsealumni SET
+        first_name = $1, last_name = $2, middle_name = $3, suffix = $4,
+        gender = $5, phone_number = $6, current_address = $7, entry_date = $8
+       WHERE alumni_id = $9`,
+      [first_name, last_name, middle_name, suffix, gender,
+       phone_number, current_address, entry_date, alumni_id]
+    );
+
+    // Replace academic history
+    await client.query("DELETE FROM academichistory WHERE alumni_id = $1", [alumni_id]);
+    for (const a of academicHist) {
+      await client.query(
+        `INSERT INTO academichistory
+         (alumni_id, degree_name, granting_university, year_started, semester_started, year_graduated, semester_graduated, latin_honor)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        [alumni_id, a.degree_name, a.granting_university, a.year_started,
+         a.semester_started, a.year_graduated, a.semester_graduated, a.latin_honor]
+      );
+    }
+
+    // Replace employment history
+    await client.query("DELETE FROM employmenthistory WHERE alumni_id = $1", [alumni_id]);
+    for (const e of employmentHist) {
+      await client.query(
+        `INSERT INTO employmenthistory
+         (alumni_id, employer, last_position_held, start_date, end_date, is_current)
+         VALUES ($1,$2,$3,$4,$5,$6)`,
+        [alumni_id, e.employer, e.last_position_held, e.start_date, e.end_date, e.is_current]
+      );
+    }
+
+    // Replace active organizations
+    await client.query("DELETE FROM activeorganizations WHERE alumni_id = $1", [alumni_id]);
+    for (const o of activeOrgs) {
+      await client.query(
+        "INSERT INTO activeorganizations (alumni_id, organization_name) VALUES ($1,$2)",
+        [alumni_id, o.organization_name]
+      );
+    }
+
+    await client.query("COMMIT");
+    res.json({ message: "Profile updated successfully." });
+
+  } catch (err) {
+    await client.query("ROLLBACK");
     res.status(500).json({ error: err.message });
   } finally {
     client.release();
