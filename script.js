@@ -490,6 +490,7 @@ let sortOrder = {
 };
 
 async function getAlumnis(sortBy = "none", searchKeyword = "none"){
+  console.log(`searchKeyword is ${searchKeyword}`);
   if (searchBarInput.value.trim() != "" ) searchKeyword = searchBarInput.value.trim();
   filters = JSON.parse(localStorage.getItem("filters"));
   if (!filters) {
@@ -1455,9 +1456,6 @@ searchBarInput.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
       console.log("search bar enter presssed")
         const value = searchBarInput.value.trim();
-
-        if (value !== "") {
-            addSearch(value);
-        }
+        addSearch(value);
     }
 });
