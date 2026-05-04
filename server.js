@@ -1057,3 +1057,69 @@ app.put("/alumni-profile", authenticateToken, async (req, res) => {
     client.release();
   }
 });
+
+app.post("/alumni-profile", authenticateToken, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const email = req.user.email;
+    const account_id = req.user.account_id;
+    const {
+      first_name, last_name, middle_name, suffix, gender,
+      phone_number, current_address, entry_date, student_number,
+      academicHist, employmentHist, activeOrgs
+    } = req.body;
+
+    await client.query("BEGIN");
+
+    const alumniResult = await client.query(
+      `INSERT INTO upsealumni
+       (first_name, last_name, middle_name, suffix, gender,
+        student_number, entry_date, current_email, phone_number,
+        current_address, account_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+       RETURNING alumni_id`,
+      [first_name, last_name, middle_name, suffix, gender,
+       student_number, entry_date, email,
+       phone_number, current_address, account_id]
+    );
+
+    const alumni_id = alumniResult.rows[0].alumni_id;
+
+    for (const a of academicHist) {
+      await client.query(
+        `INSERT INTO academichistory
+         (alumni_id, degree_name, granting_university, year_started,
+          semester_started, year_graduated, semester_graduated, latin_honor)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        [alumni_id, a.degree_name, a.granting_university, a.year_started,
+         a.semester_started, a.year_graduated, a.semester_graduated, a.latin_honor]
+      );
+    }
+
+    for (const e of employmentHist) {
+      await client.query(
+        `INSERT INTO employmenthistory
+         (alumni_id, employer, last_position_held, start_date, end_date, is_current)
+         VALUES ($1,$2,$3,$4,$5,$6)`,
+        [alumni_id, e.employer, e.last_position_held,
+         e.start_date, e.end_date, e.is_current]
+      );
+    }
+
+    for (const o of activeOrgs) {
+      await client.query(
+        "INSERT INTO activeorganizations (alumni_id, organization_name) VALUES ($1,$2)",
+        [alumni_id, o.organization_name]
+      );
+    }
+
+    await client.query("COMMIT");
+    res.json({ message: "Profile created successfully." });
+
+  } catch (err) {
+    await client.query("ROLLBACK");
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});

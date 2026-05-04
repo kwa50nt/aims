@@ -46,9 +46,19 @@ async function loadProfile() {
       headers: { Authorization: `Bearer ${token}` }
     });
 
-    if (!res.ok) {
-      document.querySelector(".profile-container").innerHTML =
-        "<p style='padding:2rem'>No alumni record is linked to your account yet. Please contact your administrator.</p>";
+    if (res.status === 404) {
+      // No alumni record linked — show empty edit form
+      currentData = null;
+      populateProfile({
+        first_name: "", last_name: "", middle_name: "", suffix: "",
+        gender: "", current_email: "", phone_number: "", current_address: "",
+        student_number: "", entry_date: "",
+        academicHist: [], employmentHist: [], activeOrgs: []
+      });
+      // Auto-enter edit mode so they can fill it in
+      toggleEdit();
+      // Change save button label to make it clear
+      document.getElementById("save-btn").innerText = "Submit Profile";
       return;
     }
 
@@ -272,20 +282,36 @@ async function saveData() {
     gender:          get("sex"),
     phone_number:    get("mobile"),
     current_address: get("address"),
+    student_number: get("sno"),
     entry_date:      toSQLDate(get("entry")),
     academicHist,
     employmentHist,
     activeOrgs,
   };
 
+    // Format phone number to match DB constraint (^9[0-9]{9}$)
+    if (payload.phone_number) {
+    let phone = payload.phone_number.replace(/[-\s]/g, ""); // remove spaces/dashes
+    if (phone.startsWith("0") && phone.length === 11) {
+        phone = phone.substring(1); // 09XXXXXXXXX → 9XXXXXXXXX
+    } else if (phone.startsWith("+63")) {
+        phone = phone.substring(3); // +639XXXXXXXXX → 9XXXXXXXXX
+    }
+    payload.phone_number = phone;
+    }
+
   try {
-    const res = await fetch("http://localhost:3001/alumni-profile", {
-      method: "PUT",
-      headers: {
+    const isNewRecord = currentData === null;
+    const url = "http://localhost:3001/alumni-profile";
+    const method = isNewRecord ? "POST" : "PUT";
+
+    const res = await fetch(url, {
+    method,
+    headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${getToken()}`,
-      },
-      body: JSON.stringify(payload),
+    },
+    body: JSON.stringify(payload),
     });
 
     const data = await res.json();
