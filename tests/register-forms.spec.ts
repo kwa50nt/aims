@@ -8,7 +8,7 @@ test.describe('Register Page', () => {
 
   test('should display all static elements (logo and headings)', async ({ page }) => {
     await expect(page.locator('#upse-logo')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Alumni Management System' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Alumni Information Management System' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Register', exact: true })).toBeVisible();
   });
 
